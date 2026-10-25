@@ -1,0 +1,14 @@
+services:
+  fitness-tracker:
+    build: .
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      FITNESS_DB_PATH: /data/fitness.sqlite
+      PORT: 3000
+    ports:
+      - "127.0.0.1:3307:3000"
+    volumes:
+      - fitness-data:/data
+volumes:
+  fitness-data:

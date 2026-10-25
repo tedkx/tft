@@ -1,0 +1,9 @@
+{
+  "name": "TFT: Ted's Fitness Tracker",
+  "short_name": "TFT",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#121820",
+  "theme_color": "#121820",
+  "icons": [{"src":"/icon.svg","sizes":"any","type":"image/svg+xml","purpose":"any maskable"}]
+}

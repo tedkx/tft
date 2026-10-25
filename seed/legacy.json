@@ -1,0 +1,510 @@
+{
+  "importedAt": "2026-10-25T13:37:19.636Z",
+  "meals": [
+    {
+      "code": "B1",
+      "title": "Το προεπιλεγμένο",
+      "category": "breakfast",
+      "description": "Το προεπιλεγμένο. 250 g γιαούρτι στραγγιστό 2% + 2 βραστά αυγά + 100 g φρούτο + 15 g μέλι",
+      "protein": 38,
+      "carbs": 35,
+      "fat": 16,
+      "kcal": 420
+    },
+    {
+      "code": "B3",
+      "title": "Βρώμη, χωρίς σκόνη",
+      "category": "breakfast",
+      "description": "Βρώμη, χωρίς σκόνη. 50 g πιστοποιημένη GF βρώμη βρασμένη σε 250 ml γάλα, να κρυώσει λίγο, μετά 200 g γιαούρτι ανακατεμένο μέσα + μπανάνα + κανέλα",
+      "protein": 36,
+      "carbs": 78,
+      "fat": 12,
+      "kcal": 560
+    },
+    {
+      "code": "B4",
+      "title": "Χωρίς μαγείρεμα",
+      "category": "breakfast",
+      "description": "Χωρίς μαγείρεμα. 200 g cottage cheese + 100 g ανανάς, ροδάκινο ή νεκταρίνι + 1 βραστό αυγό + 25 φουντούκια (~30 g)",
+      "protein": 34,
+      "carbs": 21,
+      "fat": 33,
+      "kcal": 535
+    },
+    {
+      "code": "B5",
+      "title": "Μπλέντερ, χωρίς σκόνη",
+      "category": "breakfast",
+      "description": "Μπλέντερ, χωρίς σκόνη. 250 ml γάλα ή κεφίρ + 250 g γιαούρτι + 100 g κατεψυγμένα μούρα + 20 g φουντουκοβούτυρο ή φυστικοβούτυρο Calvé",
+      "protein": 39,
+      "carbs": 36,
+      "fat": 21,
+      "kcal": 485
+    },
+    {
+      "code": "B6",
+      "title": "Ψωμί με επάλειψη + γιαούρτι",
+      "category": "breakfast",
+      "description": "Ψωμί με επάλειψη + γιαούρτι. 2 μεγάλες φέτες ψωμί χωρίς γλουτένη — μία με 50 g Arla Protein cottage και η άλλη είτε με 10 g Lurpak ανάλατο + 15 g μέλι είτε με 20 g ΟΛΥΜΠΟΣ Άλειμμα Φιστίκι 100%, χωρίς άλλη επάλειψη — και 250 g γιαούρτι στραγγιστό 2% στο πλάι",
+      "protein": 39.5,
+      "carbs": 62,
+      "fat": 18,
+      "kcal": 575,
+      "variants": [
+        {
+          "name": "Lurpak + μέλι",
+          "description": "Ψωμί με επάλειψη + γιαούρτι. 2 μεγάλες φέτες ψωμί χωρίς γλουτένη — μία με 50 g Arla Protein cottage και η άλλη είτε με 10 g Lurpak ανάλατο + 15 g μέλι είτε με 20 g ΟΛΥΜΠΟΣ Άλειμμα Φιστίκι 100%, χωρίς άλλη επάλειψη — και 250 g γιαούρτι στραγγιστό 2% στο πλάι",
+          "protein": 39.5,
+          "carbs": 62,
+          "fat": 18,
+          "kcal": 575
+        },
+        {
+          "name": "ΟΛΥΜΠΟΣ άλειμμα φιστίκι",
+          "description": "Ψωμί με επάλειψη + γιαούρτι. 2 μεγάλες φέτες ψωμί χωρίς γλουτένη — μία με 50 g Arla Protein cottage και η άλλη είτε με 10 g Lurpak ανάλατο + 15 g μέλι είτε με 20 g ΟΛΥΜΠΟΣ Άλειμμα Φιστίκι 100%, χωρίς άλλη επάλειψη — και 250 g γιαούρτι στραγγιστό 2% στο πλάι",
+          "protein": 39.5,
+          "carbs": 62,
+          "fat": 18,
+          "kcal": 575
+        }
+      ]
+    },
+    {
+      "code": "B7",
+      "title": "Ομελέτα με γκούντα και γαλοπούλα",
+      "category": "breakfast",
+      "description": "Ομελέτα με γκούντα και γαλοπούλα. 3 αυγά + 2 δεντράκια μπρόκολο + 1,5 φέτα γκούντα + 0,75 φέτα ψητή γαλοπούλα + 1 κ.σ. λάδι (ή μισό-μισό με Lurpak) + 3 λωρίδες πιπεριά + σχινόπρασο",
+      "protein": 32,
+      "carbs": 9,
+      "fat": 41,
+      "kcal": 530
+    },
+    {
+      "code": "B8",
+      "title": "Ομελέτα με ανθότυρο και γιαούρτι",
+      "category": "breakfast",
+      "description": "Ομελέτα με ανθότυρο και γιαούρτι. 3 αυγά + 1 χούφτα σπανάκι + 60 g ανθότυρο + ¼ πιπεριά Φλωρίνης + 1 κ.γ. ελαιόλαδο + μία πρέζα αλάτι, και 150 g γιαούρτι στραγγιστό 2% στο πλάι. Χωρίς Lurpak.",
+      "protein": 43,
+      "carbs": 13,
+      "fat": 26,
+      "kcal": 455
+    },
+    {
+      "code": "L1",
+      "title": "Μπολ κοτόπουλο & ρύζι",
+      "category": "lunch",
+      "description": "Μπολ κοτόπουλο & ρύζι. 130 g στήθος κοτόπουλο + 150 g μαγειρεμένο ρύζι + αγγούρι, πιπεριά, ρόκα + 1 κ.σ. λάδι + λεμόνι",
+      "protein": 45,
+      "carbs": 56,
+      "fat": 20,
+      "kcal": 590
+    },
+    {
+      "code": "L2",
+      "title": "Σαλάτα φασόλια, τόνος & λαχανίδα",
+      "category": "lunch",
+      "description": "Σαλάτα φασόλια, τόνος & λαχανίδα *(χωρίς μαγείρεμα)*. 1 κονσέρβα τόνος + 200 g λευκά φασόλια + λαχανίδα ή ρόκα + κόκκινο κρεμμύδι, κάπαρη, λεμόνι + 1 βραστό αυγό + 1 κ.σ. λάδι",
+      "protein": 47,
+      "carbs": 45,
+      "fat": 21,
+      "kcal": 555
+    },
+    {
+      "code": "L3",
+      "title": "Φακές & αυγά",
+      "category": "lunch",
+      "description": "Φακές & αυγά. 250 g μαγειρεμένες φακές + 2 βραστά αυγά + 60 g ανθότυρο + σαλάτα αγγούρι και πιπεριά",
+      "protein": 44,
+      "carbs": 57,
+      "fat": 16,
+      "kcal": 555
+    },
+    {
+      "code": "L4",
+      "title": "Κοτόπουλο & πατάτα",
+      "category": "lunch",
+      "description": "Κοτόπουλο & πατάτα. 150 g μπούτι κοτόπουλο + 200 g μαγειρεμένη πατάτα ή γλυκοπατάτα + χόρτα, φασολάκια ή μπρόκολο + 1 κ.σ. λάδι",
+      "protein": 44,
+      "carbs": 51,
+      "fat": 26,
+      "kcal": 610
+    },
+    {
+      "code": "L5",
+      "title": "Καπνιστός σολομός & κινόα",
+      "category": "lunch",
+      "description": "Καπνιστός σολομός & κινόα *(χωρίς μαγείρεμα)*. 130 g καπνιστός σολομός + 150 g μαγειρεμένη κινόα + αγγούρι, μάραθο, άνηθος, λεμόνι + 100 g ντρέσινγκ γιαουρτιού-λεμονιού-άνηθου + ½ κ.σ. λάδι",
+      "protein": 44,
+      "carbs": 45,
+      "fat": 24,
+      "kcal": 580
+    },
+    {
+      "code": "S1",
+      "title": "Τόνος ή σαρδέλες με ρυζογκοφρέτες",
+      "category": "snack",
+      "description": "Κονσέρβα τόνος ή σαρδέλες + 3 ρυζογκοφρέτες καλαμποκιού",
+      "protein": 24,
+      "carbs": 21,
+      "fat": 2,
+      "kcal": 200,
+      "variants": [
+        {
+          "name": "Τόνος",
+          "description": "Κονσέρβα τόνος ή σαρδέλες + 3 ρυζογκοφρέτες καλαμποκιού",
+          "protein": 24,
+          "carbs": 21,
+          "fat": 2,
+          "kcal": 200
+        },
+        {
+          "name": "Σαρδέλες",
+          "description": "Κονσέρβα τόνος ή σαρδέλες + 3 ρυζογκοφρέτες καλαμποκιού",
+          "protein": 24,
+          "carbs": 21,
+          "fat": 12,
+          "kcal": 290
+        }
+      ]
+    },
+    {
+      "code": "S2",
+      "title": "Γιαούρτι με μέλι",
+      "category": "snack",
+      "description": "200 g γιαούρτι στραγγιστό 2% + 20 g μέλι + κανέλα",
+      "protein": 20,
+      "carbs": 24,
+      "fat": 4,
+      "kcal": 210
+    },
+    {
+      "code": "S3",
+      "title": "Το σνακ με τα φουντούκια",
+      "category": "snack",
+      "description": "Το σνακ με τα φουντούκια. 150 g cottage cheese + 25 φουντούκια (~30 g)",
+      "protein": 22,
+      "carbs": 6,
+      "fat": 26,
+      "kcal": 347
+    },
+    {
+      "code": "S4",
+      "title": "Ανθότυρο με αγγούρι και πιπεριά",
+      "category": "snack",
+      "description": "150 g ανθότυρο + αγγούρι, πιπεριά, 1 κ.γ. μέλι",
+      "protein": 18,
+      "carbs": 12,
+      "fat": 11,
+      "kcal": 220
+    },
+    {
+      "code": "S5",
+      "title": "Κοτόπουλο με φουντούκια",
+      "category": "snack",
+      "description": "*(μέρες προπόνησης)* 100 g κοτόπουλο από το ψυγείο + 25 φουντούκια (~30 g)",
+      "protein": 34,
+      "carbs": 2,
+      "fat": 24,
+      "kcal": 375
+    },
+    {
+      "code": "S6",
+      "title": "Αυγό, αβοκάντο και cottage",
+      "category": "snack",
+      "description": "1 σφιχτό αυγό + ½ αβοκάντο + 45 g cottage + 1 κ.γ. μαγιονέζα + μία πρέζα αλάτι",
+      "protein": 13,
+      "carbs": 8,
+      "fat": 22,
+      "kcal": 280
+    },
+    {
+      "code": "S7",
+      "title": "Protein pudding Όλυμπος",
+      "category": "snack",
+      "description": "1 συσκευασία 200 g Protein Pudding Όλυμπος Μπισκότο–Λεμόνι",
+      "protein": 21,
+      "carbs": 13.2,
+      "fat": 2.4,
+      "kcal": 158
+    },
+    {
+      "code": "D1",
+      "title": "Πιάτο με σαρδέλα ή γαύρο",
+      "category": "dinner",
+      "description": "Πιάτο με σαρδέλα ή γαύρο. 1 κονσέρβα σαρδέλες / 100 g γαύρος μαρινάτος + 150 g βραστή πατάτα (από την προετοιμασία) + αγγούρι, μάραθο, κόκκινο κρεμμύδι, κάπαρη, λεμόνι + 60 g ανθότυρο + ½ κ.σ. λάδι",
+      "protein": 37,
+      "carbs": 42,
+      "fat": 22,
+      "kcal": 515
+    },
+    {
+      "code": "D2",
+      "title": "Σαλάτα κοτόπουλο, αγγούρι & νεκταρίνι",
+      "category": "dinner",
+      "description": "Σαλάτα κοτόπουλο, αγγούρι & νεκταρίνι. 120 g κρύο κοτόπουλο + 1 νεκταρίνι ή ροδάκινο σε φέτες + αγγούρι, κόκκινο κρεμμύδι, δυόσμος, ρόκα + 100 g ντρέσινγκ γιαουρτιού-λεμονιού + ½ κ.σ. λάδι",
+      "protein": 42,
+      "carbs": 30,
+      "fat": 18,
+      "kcal": 450
+    },
+    {
+      "code": "D3",
+      "title": "Πιάτο τόνος & αβοκάντο",
+      "category": "dinner",
+      "description": "Πιάτο τόνος & αβοκάντο. 1 κονσέρβα τόνος + 2 βραστά αυγά + ½ αβοκάντο + αγγούρι, κόκκινο κρεμμύδι, λάιμ, κόλιαντρος, τσίλι",
+      "protein": 38,
+      "carbs": 18,
+      "fat": 25,
+      "kcal": 450
+    },
+    {
+      "code": "D4",
+      "title": "Λαχανοσαλάτα με κοτόπουλο & φουντούκια",
+      "category": "dinner",
+      "description": "Λαχανοσαλάτα με κοτόπουλο & φουντούκια. 120 g κοτόπουλο + λάχανο και καρότο τριμμένα + 100 g ντρέσινγκ γιαουρτιού-ταχινιού-λάιμ + 25 φουντούκια (~30 g) χοντροκομμένα",
+      "protein": 47,
+      "carbs": 21,
+      "fat": 34,
+      "kcal": 595
+    },
+    {
+      "code": "D5",
+      "title": "Ψητό ψάρι ή κρέας",
+      "category": "dinner",
+      "description": "Ψητό ψάρι ή κρέας. 150 g μπακαλιάρος, τσιπούρα, σολομός ή μπριζόλα + μπρόκολο, φασολάκια ή χόρτα + 150 g πατάτα + 1 κ.σ. λάδι + λεμόνι",
+      "protein": 38.5,
+      "carbs": 40,
+      "fat": 26.5,
+      "kcal": 565
+    },
+    {
+      "code": "D6",
+      "title": "Στραπατσάδα + cottage",
+      "category": "dinner",
+      "description": "Στραπατσάδα + cottage. 4 αυγά χτυπητά μέσα σε φρέσκια ντομάτα, 1 κ.γ. λάδι + 150 g cottage cheese στο πλάι",
+      "protein": 43,
+      "carbs": 18,
+      "fat": 33,
+      "kcal": 540
+    },
+    {
+      "code": "D7",
+      "title": "Αυγά μάτια με πιπεριά Φλωρίνης",
+      "category": "dinner",
+      "description": "Αυγά μάτια με πιπεριά Φλωρίνης. 3 αυγά μάτια + 3 λωρίδες πιπεριά Φλωρίνης + σχινόπρασο + 10 g Lurpak ανάλατο + 1,5 φέτα γκούντα + ½ φέτα ψωμί χωρίς γλουτένη + 75 g cottage ή 60 g ανθότυρο",
+      "protein": 37.5,
+      "carbs": 15.5,
+      "fat": 40,
+      "kcal": 577.5,
+      "variants": [
+        {
+          "name": "75 g cottage",
+          "description": "Αυγά μάτια με πιπεριά Φλωρίνης. 3 αυγά μάτια + 3 λωρίδες πιπεριά Φλωρίνης + σχινόπρασο + 10 g Lurpak ανάλατο + 1,5 φέτα γκούντα + ½ φέτα ψωμί χωρίς γλουτένη + 75 g cottage ή 60 g ανθότυρο",
+          "protein": 37.5,
+          "carbs": 15.5,
+          "fat": 40,
+          "kcal": 577.5
+        },
+        {
+          "name": "60 g ανθότυρο",
+          "description": "Αυγά μάτια με πιπεριά Φλωρίνης. 3 αυγά μάτια + 3 λωρίδες πιπεριά Φλωρίνης + σχινόπρασο + 10 g Lurpak ανάλατο + 1,5 φέτα γκούντα + ½ φέτα ψωμί χωρίς γλουτένη + 75 g cottage ή 60 g ανθότυρο",
+          "protein": 37.5,
+          "carbs": 15.5,
+          "fat": 40,
+          "kcal": 577.5
+        }
+      ]
+    },
+    {
+      "code": "D8",
+      "title": "Βραδιά σουβλάκι",
+      "category": "dinner",
+      "description": "Βραδιά σουβλάκι. 2 καλαμάκια κοτόπουλο + 1 μερίδα πατάτες, χωρίς πίτα ή σάλτσα",
+      "protein": 50,
+      "carbs": 72.5,
+      "fat": 33,
+      "kcal": 775
+    },
+    {
+      "code": "D9",
+      "title": "Κοτόπουλο, ρύζι & μπρόκολο",
+      "category": "dinner",
+      "description": "Κοτόπουλο, ρύζι & μπρόκολο. 120 g μαγειρεμένο στήθος κοτόπουλο + 50 g ρύζι ζυγισμένο ωμό, πριν το βράσιμο + 10 g Lurpak Soft ανάλατο στο ρύζι + 50 g μπρόκολο + 1 κ.γ. ελαιόλαδο + ½ κ.γ. μπαλσάμικο + 1 πρέζα αλάτι",
+      "protein": 42,
+      "carbs": 43,
+      "fat": 18,
+      "kcal": 535
+    }
+  ],
+  "products": [
+    {
+      "alias": "cottage arla",
+      "name": "Arla Protein Cottage Cheese 1,5%",
+      "referenceAmount": 100,
+      "unit": "g",
+      "protein": 14,
+      "carbs": 2.1,
+      "fat": 1.5,
+      "kcal": 76,
+      "salt": 0.82,
+      "source": "https://www.arlafoods.gr/our-brands/arla-protein-cottage-cheese-200g-95435/",
+      "notes": "[Arla](https://www.arlafoods.gr/our-brands/arla-protein-cottage-cheese-200g-95435/)"
+    },
+    {
+      "alias": "cottage arla 4%",
+      "name": "Arla Cottage Cheese 4%",
+      "referenceAmount": 100,
+      "unit": "g",
+      "protein": 14,
+      "carbs": 1.7,
+      "fat": 4,
+      "kcal": 99,
+      "salt": 0.83,
+      "source": "https://www.arlafoods.gr/our-brands/arla/cottage-cheese-4-200g/",
+      "notes": "Διαφορετικό από το Arla Protein. [Arla](https://www.arlafoods.gr/our-brands/arla/cottage-cheese-4-200g/)"
+    },
+    {
+      "alias": "cottage fage",
+      "name": "ΦΑΓΕ Flair Cottage Cheese 4%",
+      "referenceAmount": 100,
+      "unit": "g",
+      "protein": 11,
+      "carbs": 3,
+      "fat": 4,
+      "kcal": 92,
+      "salt": 1,
+      "source": "https://gr.fage/yogurts/flair/flair-cottage-cheese",
+      "notes": "Προεπιλεγμένο cottage του μενού. Πιστοποιημένο χωρίς γλουτένη. [ΦΑΓΕ](https://gr.fage/yogurts/flair/flair-cottage-cheese)"
+    },
+    {
+      "alias": "protein pudding olympos lemon",
+      "name": "ΟΛΥΜΠΟΣ Protein Pudding Μπισκότο–Λεμόνι",
+      "referenceAmount": 200,
+      "unit": "g",
+      "protein": 21,
+      "carbs": 13.2,
+      "fat": 2.4,
+      "kcal": 158,
+      "salt": 0.2,
+      "source": "https://www.olympos.gr/product/protein-pudding-biskoto-lemoni/",
+      "notes": "[ΟΛΥΜΠΟΣ](https://www.olympos.gr/product/protein-pudding-biskoto-lemoni/)"
+    },
+    {
+      "alias": "arla protein pudding caramel",
+      "name": "Arla Protein Pudding Αλατισμένη Καραμέλα",
+      "referenceAmount": 200,
+      "unit": "g",
+      "protein": 20,
+      "carbs": 15.4,
+      "fat": 3,
+      "kcal": 146,
+      "salt": 0.82,
+      "source": "https://www.arlafoods.gr/our-brands/arla-protein/pudding-alatismeni-karamela-200g/",
+      "notes": "[ARLA](https://www.arlafoods.gr/our-brands/arla-protein/pudding-alatismeni-karamela-200g/)"
+    },
+    {
+      "alias": "tuborg pink grapefruit",
+      "name": "Tuborg Pink Grapefruit & Σαγκουίνι",
+      "referenceAmount": 1,
+      "unit": "serving",
+      "protein": 0,
+      "carbs": 20.8,
+      "fat": 0,
+      "kcal": 89,
+      "salt": 0.1,
+      "source": "https://www.olympicbrewery.gr/our-products/tuborg/tuborg-pink-grapefruit-and-blood-orange/",
+      "notes": "Αναψυκτικό 0% αλκοόλ. [Ολυμπιακή Ζυθοποιία](https://www.olympicbrewery.gr/our-products/tuborg/tuborg-pink-grapefruit-and-blood-orange/)"
+    },
+    {
+      "alias": "lays baked tomato basil",
+      "name": "Lay’s Στο Φούρνο Ντομάτα & Βασιλικός",
+      "referenceAmount": 100,
+      "unit": "g",
+      "protein": 5.3,
+      "carbs": 71,
+      "fat": 14,
+      "kcal": 442,
+      "salt": 1.2,
+      "source": "https://www.lays.gr/products/lays-sto-foyrno-me-geysi-ntomata-kai-basiliko",
+      "notes": "Περιέχει σιτάλευρο — όχι κατάλληλο για διατροφή χωρίς γλουτένη. [Lay’s](https://www.lays.gr/products/lays-sto-foyrno-me-geysi-ntomata-kai-basiliko)"
+    },
+    {
+      "alias": "lurpak unsalted",
+      "name": "Lurpak ανάλατο σε σκαφάκι",
+      "referenceAmount": 10,
+      "unit": "g",
+      "protein": 0.1,
+      "carbs": 0.1,
+      "fat": 8.2,
+      "kcal": 75,
+      "salt": 0,
+      "source": "https://www.lurpak.com/gr/proionta/lurpak-analato-skafaki-225gr/",
+      "notes": "Η μερίδα εδώ είναι 10 g. [Lurpak](https://www.lurpak.com/gr/proionta/lurpak-analato-skafaki-225gr/)"
+    },
+    {
+      "alias": "protein bar mgt salted caramel",
+      "name": "myGreekTaste Core Protein Raw Salted Caramel Twist",
+      "referenceAmount": 60,
+      "unit": "g",
+      "protein": 18,
+      "carbs": 16.8,
+      "fat": 10.8,
+      "kcal": 242,
+      "salt": 0.27,
+      "source": "https://www.mygreektaste.gr/product/salted-caramel-protein-bar-mgt/",
+      "notes": "Χωρίς γλουτένη· 3,6 g φυτικές ίνες. [myGreekTaste](https://www.mygreektaste.gr/product/salted-caramel-protein-bar-mgt/)"
+    },
+    {
+      "alias": "protein bar mgt peanut honey",
+      "name": "myGreekTaste Core Protein Raw Peanut Honey Classic",
+      "referenceAmount": 60,
+      "unit": "g",
+      "protein": 18,
+      "carbs": 20,
+      "fat": 9.7,
+      "kcal": 247,
+      "salt": 0.18,
+      "source": "https://www.mygreektaste.gr/product/peanut-honey-protein-bar-mygreektaste/",
+      "notes": "Χωρίς γλουτένη· 2,5 g φυτικές ίνες. [myGreekTaste](https://www.mygreektaste.gr/product/peanut-honey-protein-bar-mygreektaste/)"
+    },
+    {
+      "alias": "φουντούκια",
+      "name": "ΣΚΛΑΒΕΝΙΤΗΣ φουντούκια ψίχα ψημένα, μη αλατισμένα",
+      "referenceAmount": 30,
+      "unit": "g",
+      "protein": 5.2,
+      "carbs": 1.8,
+      "fat": 19.5,
+      "kcal": 209,
+      "salt": 0.01,
+      "source": "https://www.sklavenitis.gr/xiroi-karpoi-snak/xiroi-karpoi-apoxiramena-froyta/foyntoykia-stragalia/sklavenitis-foudoukia-psiha-psimena-mi-alatismena-eisagogis-200gr/",
+      "notes": "Προεπιλεγμένο και αποκλειστικό προϊόν για κάθε αναφορά σε φουντούκια. Ανά 100 g: 17,4 g πρωτεΐνη, 6 g υδατ., 65,1 g λίπος, 697 kcal. Ενδέχεται να περιέχει ίχνη γλουτένης. [ΣΚΛΑΒΕΝΙΤΗΣ](https://www.sklavenitis.gr/xiroi-karpoi-snak/xiroi-karpoi-apoxiramena-froyta/foyntoykia-stragalia/sklavenitis-foudoukia-psiha-psimena-mi-alatismena-eisagogis-200gr/)"
+    },
+    {
+      "alias": "φυστικοβούτυρο olympos",
+      "name": "ΟΛΥΜΠΟΣ Άλειμμα Φιστίκι 100% χωρίς γλουτένη",
+      "referenceAmount": 20,
+      "unit": "g",
+      "protein": 5,
+      "carbs": 4.2,
+      "fat": 9.6,
+      "kcal": 127,
+      "salt": 0,
+      "source": "https://www.sklavenitis.gr/eidi-proinoy-rofimata/pralines-tachini-fystikovoytyro/fistikovoytyro/olumpos-aleimma-fistiki-horis-glouteni-200gr-1477083/",
+      "notes": "Αποκλειστική βάση φυστικοβούτυρου για το B6. 100% ψημένες αραχίδες, χωρίς ζάχαρη, αλάτι ή πρόσθετο έλαιο. Ανά 100 g: 25 g πρωτεΐνη, 21 g υδατ., 48 g λίπος, 634 kcal. [ΣΚΛΑΒΕΝΙΤΗΣ](https://www.sklavenitis.gr/eidi-proinoy-rofimata/pralines-tachini-fystikovoytyro/fistikovoytyro/olumpos-aleimma-fistiki-horis-glouteni-200gr-1477083/)"
+    },
+    {
+      "alias": "φυστικοβούτυρο",
+      "name": "Calvé Φυστικοβούτυρο Απαλό",
+      "referenceAmount": 15,
+      "unit": "g",
+      "protein": 3.2,
+      "carbs": 1.7,
+      "fat": 8.7,
+      "kcal": 100,
+      "salt": 0.08,
+      "source": "https://www.sklavenitis.gr/eidi-proinoy-rofimata/pralines-tachini-fystikovoytyro/fistikovoytyro/calve-fistikovouturo-apalo-350gr/",
+      "notes": "Προεπιλεγμένο και αποκλειστικό προϊόν για κάθε σκέτη αναφορά σε φυστικοβούτυρο. Ανά 100 g: 21 g πρωτεΐνη, 11 g υδατ., 58 g λίπος, 664 kcal. Περιέχει 85% αραχίδες και ενδέχεται να περιέχει γάλα και γλουτένη. [ΣΚΛΑΒΕΝΙΤΗΣ](https://www.sklavenitis.gr/eidi-proinoy-rofimata/pralines-tachini-fystikovoytyro/fistikovoytyro/calve-fistikovouturo-apalo-350gr/)"
+    }
+  ]
+}
