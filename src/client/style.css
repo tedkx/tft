@@ -705,6 +705,9 @@ button:disabled {
   font-size: 11px;
   color: #bbc8d5;
 }
+.meal-autocomplete input {
+  font-size: 11px;
+}
 .meal-suggestions {
   position: absolute;
   top: calc(100% + 4px);
@@ -732,13 +735,37 @@ button:disabled {
   text-align: left;
   font-size: 11px;
 }
+.meal-suggestion-code {
+  color: #a6c9ff;
+  flex: 0 0 30px;
+}
+.meal-suggestion-main {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 3px 8px;
+  min-width: 0;
+}
+.meal-suggestion-main strong {
+  color: #edf3fb;
+  font-weight: 600;
+}
+.meal-suggestion-ingredients {
+  color: #9aaabd;
+  font-size: 10px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 34ch;
+}
+.meal-suggestion-main small {
+  color: #9aaabd;
+  flex-basis: 100%;
+  font-size: 9px;
+}
 .meal-suggestions button:hover,
 .meal-suggestions button.active {
   background: #263d5a;
-}
-.meal-suggestions strong {
-  color: #a6c9ff;
-  min-width: 30px;
 }
 .no-suggestions {
   padding: 9px;
@@ -784,6 +811,21 @@ button:disabled {
 .library-editor {
   display: grid;
   gap: 15px;
+}
+.category-options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px 12px;
+  padding: 6px 0;
+}
+.form .category-option {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+.form .category-option input {
+  width: auto;
+  min-height: auto;
 }
 .variant-section {
   border-top: 1px solid #354452;

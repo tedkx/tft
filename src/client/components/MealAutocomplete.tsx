@@ -1,8 +1,9 @@
 import { useEffect, useId, useState } from 'react';
 import type { KeyboardEvent } from 'react';
 import type { Meal } from '../models.js';
+import { categories } from '../constants.js';
 
-const caption = (meal: Meal) => `${meal.code} · ${meal.title}`;
+const caption = (meal: Meal) => meal.title;
 const searchText = (value: string) =>
   value
     .normalize('NFD')
@@ -24,7 +25,16 @@ export function MealAutocomplete({
   const [open, setOpen] = useState(false);
   const [activeIndex, setActiveIndex] = useState(0);
   const matches = meals
-    .filter((meal) => searchText(caption(meal)).includes(searchText(query.trim())))
+    .filter((meal) =>
+      searchText(
+        [
+          meal.code,
+          meal.title,
+          meal.ingredients_text,
+          ...meal.categories.map((category) => categories[category]),
+        ].join(' '),
+      ).includes(searchText(query.trim())),
+    )
     .slice(0, 10);
 
   useEffect(() => {
@@ -70,9 +80,12 @@ export function MealAutocomplete({
           open && matches[activeIndex] ? `${listId}-${matches[activeIndex].id}` : undefined
         }
         autoComplete="off"
-        placeholder="Αναζήτηση με κωδικό ή όνομα…"
+        placeholder="Αναζήτηση με τίτλο, υλικό ή κωδικό…"
         value={query}
-        onFocus={() => setOpen(true)}
+        onFocus={(event) => {
+          event.currentTarget.select();
+          setOpen(true);
+        }}
         onBlur={() => setOpen(false)}
         onKeyDown={keyDown}
         onChange={(event) => {
@@ -97,8 +110,16 @@ export function MealAutocomplete({
                 onMouseDown={(event) => event.preventDefault()}
                 onClick={() => choose(meal)}
               >
-                <strong>{meal.code}</strong>
-                <span>{meal.title}</span>
+                <span className="meal-suggestion-code">{meal.code}</span>
+                <span className="meal-suggestion-main">
+                  <strong>{meal.title}</strong>
+                  {meal.ingredients_text && (
+                    <span className="meal-suggestion-ingredients">{meal.ingredients_text}</span>
+                  )}
+                  <small>
+                    {meal.categories.map((category) => categories[category]).join(' · ')}
+                  </small>
+                </span>
               </button>
             ))
           ) : (

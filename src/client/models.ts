@@ -24,7 +24,8 @@ export type Meal = {
   id: string;
   code: string;
   title: string;
-  category: string;
+  categories: Array<'breakfast' | 'lunch' | 'snack' | 'dinner'>;
+  ingredients_text: string;
   description: string;
   active: number;
   variants: Variant[];

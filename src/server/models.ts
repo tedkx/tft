@@ -30,7 +30,12 @@ export const mealSchema = z.object({
     .trim()
     .regex(/^[BLSD]\d{1,3}$/i),
   title: z.string().trim().min(1).max(200),
-  category: z.enum(['breakfast', 'lunch', 'snack', 'dinner']),
+  categories: z
+    .array(z.enum(['breakfast', 'lunch', 'snack', 'dinner']))
+    .min(1)
+    .max(4)
+    .refine((items) => new Set(items).size === items.length),
+  ingredientsText: z.string().trim().max(5000).default(''),
   description: z.string().max(5000).nullable().optional(),
   active: z.boolean().optional(),
 });

@@ -182,6 +182,8 @@ app.patch('/api/meals/:id', async (request) => {
   if (!previous) return { error: 'Not found' };
   const m = mealSchema.parse({
     ...previous,
+    categories: JSON.parse(String(previous.categories)),
+    ingredientsText: previous.ingredients_text,
     active: !!previous.active,
     ...(request.body as object),
   });

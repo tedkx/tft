@@ -15,6 +15,9 @@ import type {
 } from './models.js';
 import { addMacros, InputError, logicalDay, now, scaleMacros, zeroMacros } from './utils.js';
 
+const cleanMealTitle = (code: string, title: string) =>
+  title.replace(new RegExp(`^${code}(?:\\s*[·.:–-]\\s*|\\s+)`, 'i'), '').trim() || title;
+
 const dbPath = process.env.FITNESS_DB_PATH ?? resolve('data/fitness.sqlite');
 mkdirSync(dirname(dbPath), { recursive: true });
 export const sqlite = new Database(dbPath);
@@ -22,7 +25,7 @@ sqlite.pragma('journal_mode = WAL');
 sqlite.pragma('foreign_keys = ON');
 sqlite.exec(`
 CREATE TABLE IF NOT EXISTS products (id TEXT PRIMARY KEY, alias TEXT NOT NULL UNIQUE, name TEXT NOT NULL, reference_amount REAL NOT NULL, unit TEXT NOT NULL, protein REAL NOT NULL, carbs REAL NOT NULL, fat REAL NOT NULL, kcal REAL NOT NULL, salt REAL, source TEXT, notes TEXT, active INTEGER NOT NULL DEFAULT 1, created_at TEXT NOT NULL, updated_at TEXT NOT NULL);
-CREATE TABLE IF NOT EXISTS meals (id TEXT PRIMARY KEY, code TEXT NOT NULL UNIQUE, title TEXT NOT NULL, category TEXT NOT NULL, description TEXT, active INTEGER NOT NULL DEFAULT 1, created_at TEXT NOT NULL, updated_at TEXT NOT NULL);
+CREATE TABLE IF NOT EXISTS meals (id TEXT PRIMARY KEY, code TEXT NOT NULL UNIQUE, title TEXT NOT NULL, categories TEXT NOT NULL DEFAULT '[]', ingredients_text TEXT NOT NULL DEFAULT '', description TEXT, active INTEGER NOT NULL DEFAULT 1, created_at TEXT NOT NULL, updated_at TEXT NOT NULL);
 CREATE TABLE IF NOT EXISTS meal_variants (id TEXT PRIMARY KEY, meal_id TEXT NOT NULL REFERENCES meals(id), name TEXT NOT NULL, ingredients TEXT NOT NULL DEFAULT '[]', macro_mode TEXT NOT NULL DEFAULT 'manual', protein REAL NOT NULL, carbs REAL NOT NULL, fat REAL NOT NULL, kcal REAL NOT NULL, is_default INTEGER NOT NULL DEFAULT 0, active INTEGER NOT NULL DEFAULT 1, created_at TEXT NOT NULL, updated_at TEXT NOT NULL);
 CREATE TABLE IF NOT EXISTS food_entries (id TEXT PRIMARY KEY, day TEXT NOT NULL, kind TEXT NOT NULL, ref_id TEXT, variant_id TEXT, amount REAL NOT NULL, label TEXT NOT NULL, snapshot TEXT NOT NULL, snapshot_detail TEXT NOT NULL DEFAULT '{}', notes TEXT, created_at TEXT NOT NULL, updated_at TEXT NOT NULL);
 CREATE INDEX IF NOT EXISTS food_entries_day_idx ON food_entries(day);
@@ -39,6 +42,40 @@ if (
   )
 )
   sqlite.exec("ALTER TABLE food_entries ADD COLUMN snapshot_detail TEXT NOT NULL DEFAULT '{}'");
+const mealColumns = (sqlite.pragma('table_info(meals)') as Array<{ name: string }>).map(
+  (c) => c.name,
+);
+if (mealColumns.includes('category')) {
+  sqlite.transaction(() => {
+    sqlite.exec('ALTER TABLE meals RENAME COLUMN category TO categories');
+    sqlite.exec('UPDATE meals SET categories = json_array(categories)');
+  })();
+}
+if (!mealColumns.includes('ingredients_text')) {
+  sqlite.exec("ALTER TABLE meals ADD COLUMN ingredients_text TEXT NOT NULL DEFAULT ''");
+  const updateIngredients = sqlite.prepare('UPDATE meals SET ingredients_text=? WHERE id=?');
+  for (const meal of sqlite.prepare('SELECT id,title,description FROM meals').all() as Array<{
+    id: string;
+    title: string;
+    description: string | null;
+  }>) {
+    const description = meal.description?.trim() ?? '';
+    const prefix = `${meal.title}. `;
+    updateIngredients.run(
+      description.startsWith(prefix) ? description.slice(prefix.length) : description,
+      meal.id,
+    );
+  }
+}
+for (const meal of sqlite.prepare('SELECT id,code,title FROM meals').all() as Array<{
+  id: string;
+  code: string;
+  title: string;
+}>) {
+  const title = cleanMealTitle(meal.code, meal.title);
+  if (title && title !== meal.title)
+    sqlite.prepare('UPDATE meals SET title=? WHERE id=?').run(title, meal.id);
+}
 export const db = drizzle(sqlite, { schema });
 export const defaults: Macros = { protein: 130, carbs: 225, fat: 65, kcal: 2005 };
 
@@ -92,6 +129,7 @@ export function variantMacros(input: VariantInput): Macros {
 export function presentMeal(meal: Record<string, unknown>) {
   return {
     ...meal,
+    categories: JSON.parse(String(meal.categories)) as string[],
     variants: all(
       'SELECT * FROM meal_variants WHERE meal_id = ? ORDER BY is_default DESC, created_at',
       meal.id,
@@ -289,13 +327,14 @@ export function createMeal(m: MealInput) {
   const time = now();
   sqlite
     .prepare(
-      'INSERT INTO meals (id,code,title,category,description,active,created_at,updated_at) VALUES (?,?,?,?,?,?,?,?)',
+      'INSERT INTO meals (id,code,title,categories,ingredients_text,description,active,created_at,updated_at) VALUES (?,?,?,?,?,?,?,?,?)',
     )
     .run(
       id,
       m.code.toUpperCase(),
-      m.title,
-      m.category,
+      cleanMealTitle(m.code, m.title),
+      JSON.stringify(m.categories),
+      m.ingredientsText,
       m.description ?? null,
       m.active === false ? 0 : 1,
       time,
@@ -306,12 +345,13 @@ export function createMeal(m: MealInput) {
 export function updateMeal(id: string, m: MealInput) {
   sqlite
     .prepare(
-      'UPDATE meals SET code=?,title=?,category=?,description=?,active=?,updated_at=? WHERE id=?',
+      'UPDATE meals SET code=?,title=?,categories=?,ingredients_text=?,description=?,active=?,updated_at=? WHERE id=?',
     )
     .run(
       m.code.toUpperCase(),
-      m.title,
-      m.category,
+      cleanMealTitle(m.code, m.title),
+      JSON.stringify(m.categories),
+      m.ingredientsText,
       m.description ?? null,
       m.active === false ? 0 : 1,
       now(),
@@ -540,6 +580,7 @@ type LegacySeed = {
     code: string;
     title: string;
     category: string;
+    ingredientsText?: string;
     description: string;
     protein: number;
     carbs: number;
@@ -578,14 +619,27 @@ export function seedIfEmpty() {
     }
     if ((sqlite.prepare('SELECT COUNT(*) AS n FROM meals').get() as { n: number }).n === 0) {
       const insertMeal = sqlite.prepare(
-        'INSERT INTO meals (id,code,title,category,description,active,created_at,updated_at) VALUES (?,?,?,?,?,1,?,?)',
+        'INSERT INTO meals (id,code,title,categories,ingredients_text,description,active,created_at,updated_at) VALUES (?,?,?,?,?,?,1,?,?)',
       );
       const insertVariant = sqlite.prepare(
         'INSERT INTO meal_variants (id,meal_id,name,ingredients,macro_mode,protein,carbs,fat,kcal,is_default,active,created_at,updated_at) VALUES (?,?,?,?,?,?,?,?,?,?,1,?,?)',
       );
       for (const m of seed.meals) {
         const id = randomUUID();
-        insertMeal.run(id, m.code, m.title, m.category, m.description, now, now);
+        const prefix = `${m.title}. `;
+        const ingredientsText =
+          m.ingredientsText ??
+          (m.description.startsWith(prefix) ? m.description.slice(prefix.length) : m.description);
+        insertMeal.run(
+          id,
+          m.code,
+          m.title,
+          JSON.stringify([m.category]),
+          ingredientsText,
+          m.description,
+          now,
+          now,
+        );
         const options = m.variants?.length
           ? m.variants
           : [

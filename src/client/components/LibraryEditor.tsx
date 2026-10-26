@@ -23,7 +23,8 @@ export function LibraryEditor({
     [mealDraft, setMealDraft] = useState({
       code: '',
       title: '',
-      category: 'breakfast',
+      categories: ['breakfast'] as Meal['categories'],
+      ingredientsText: '',
       description: '',
       active: true,
     }),
@@ -61,11 +62,19 @@ export function LibraryEditor({
         ? {
             code: m.code,
             title: m.title,
-            category: m.category,
+            categories: m.categories,
+            ingredientsText: m.ingredients_text,
             description: m.description ?? '',
             active: !!m.active,
           }
-        : { code: '', title: '', category: 'breakfast', description: '', active: true },
+        : {
+            code: '',
+            title: '',
+            categories: ['breakfast'],
+            ingredientsText: '',
+            description: '',
+            active: true,
+          },
     );
     setVariantDraft({
       name: '',
@@ -178,19 +187,28 @@ export function LibraryEditor({
                   required
                 />
               </label>
-              <label>
-                Κατηγορία
-                <select
-                  value={mealDraft.category}
-                  onChange={(e) => setMealDraft({ ...mealDraft, category: e.target.value })}
-                >
+              <div className="form-label">
+                <span>Κατηγορίες (μία ή περισσότερες)</span>
+                <span className="category-options">
                   {Object.entries(categories).map(([key, value]) => (
-                    <option key={key} value={key}>
+                    <label className="category-option" key={key}>
+                      <input
+                        type="checkbox"
+                        checked={mealDraft.categories.includes(key as Meal['categories'][number])}
+                        onChange={(e) =>
+                          setMealDraft({
+                            ...mealDraft,
+                            categories: e.target.checked
+                              ? [...mealDraft.categories, key as Meal['categories'][number]]
+                              : mealDraft.categories.filter((category) => category !== key),
+                          })
+                        }
+                      />
                       {value}
-                    </option>
+                    </label>
                   ))}
-                </select>
-              </label>
+                </span>
+              </div>
             </div>
             <label>
               Τίτλος
@@ -198,6 +216,14 @@ export function LibraryEditor({
                 value={mealDraft.title}
                 onChange={(e) => setMealDraft({ ...mealDraft, title: e.target.value })}
                 required
+              />
+            </label>
+            <label>
+              Υλικά (για αναζήτηση)
+              <textarea
+                rows={2}
+                value={mealDraft.ingredientsText}
+                onChange={(e) => setMealDraft({ ...mealDraft, ingredientsText: e.target.value })}
               />
             </label>
             <label>
@@ -216,7 +242,7 @@ export function LibraryEditor({
               />{' '}
               Ενεργό γεύμα
             </label>
-            <button className="primary" disabled={busy}>
+            <button className="primary" disabled={busy || mealDraft.categories.length === 0}>
               Αποθήκευση γεύματος
             </button>
           </form>
