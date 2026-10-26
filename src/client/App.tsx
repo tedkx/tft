@@ -15,7 +15,8 @@ import {
   X,
 } from 'lucide-react';
 import type { Day, Entry, Meal, Overview, Page, Product, TargetPlan } from './models.js';
-import { keys, labels } from './constants.js';
+import { keys, labels, macroColors } from './constants.js';
+import type { CSSProperties } from 'react';
 import { displayDay, fmt, localDay, shiftDay } from './utils.js';
 import { api } from './api.js';
 import { Metric } from './components/Metric.js';
@@ -322,6 +323,7 @@ export function App() {
                   target={data.targets[key]}
                   percent={data.percentages[key]}
                   unit={key === 'kcal' ? 'kcal' : 'g'}
+                  macro={key}
                 />
               ))}
             </div>
@@ -498,16 +500,27 @@ export function App() {
                     <strong>{d.day.slice(-2)}</strong>
                   </div>
                   {keys.map((key) => (
-                    <div className="daily-bar" key={key}>
+                    <div
+                      className="daily-bar"
+                      key={key}
+                      style={{ '--macro-color': macroColors[key] } as CSSProperties}
+                    >
                       <div>
                         <span>{key === 'kcal' ? 'kcal' : labels[key].slice(0, 1)}</span>
                         <span>{d.percentages[key]}%</span>
                       </div>
                       <div className="bar-track">
                         <span
-                          className={d.percentages[key] > 100 ? 'over' : ''}
-                          style={{ width: `${Math.min((d.percentages[key] / 130) * 100, 100)}%` }}
+                          style={{
+                            width: `${d.percentages[key] > 100 ? 10000 / d.percentages[key] : Math.max(0, d.percentages[key])}%`,
+                          }}
                         />
+                        {d.percentages[key] > 100 && (
+                          <span
+                            className="over"
+                            style={{ width: `${100 - 10000 / d.percentages[key]}%` }}
+                          />
+                        )}
                       </div>
                     </div>
                   ))}

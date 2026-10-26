@@ -14,3 +14,9 @@ export const labels: Record<keyof Macros, string> = {
   kcal: 'Θερμίδες',
 };
 export const initialMacros: Macros = { protein: 0, carbs: 0, fat: 0, kcal: 0 };
+export const macroColors: Record<keyof Macros, string> = {
+  protein: 'var(--color-protein)',
+  carbs: 'var(--color-carbs)',
+  fat: 'var(--color-fat)',
+  kcal: 'var(--color-kcal)',
+};
