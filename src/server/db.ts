@@ -14,6 +14,7 @@ import type {
   VariantInput,
 } from './models.js';
 import { addMacros, InputError, logicalDay, now, scaleMacros, zeroMacros } from './utils.js';
+import type { HevyWorkout } from './hevy.js';
 
 const cleanMealTitle = (code: string, title: string) =>
   title.replace(new RegExp(`^${code}(?:\\s*[·.:–-]\\s*|\\s+)`, 'i'), '').trim() || title;
@@ -32,6 +33,10 @@ CREATE INDEX IF NOT EXISTS food_entries_day_idx ON food_entries(day);
 CREATE TABLE IF NOT EXISTS sleep_records (day TEXT PRIMARY KEY, minutes INTEGER NOT NULL, source TEXT NOT NULL, updated_at TEXT NOT NULL);
 CREATE TABLE IF NOT EXISTS measurements (id TEXT PRIMARY KEY, day TEXT NOT NULL, weight_kg REAL, waist_cm REAL, fat_kg REAL, muscle_kg REAL, bone_kg REAL, steps INTEGER, source TEXT NOT NULL, notes TEXT, created_at TEXT NOT NULL);
 CREATE INDEX IF NOT EXISTS measurements_day_idx ON measurements(day);
+CREATE TABLE IF NOT EXISTS hevy_workouts (id TEXT PRIMARY KEY, title TEXT NOT NULL, start_time TEXT NOT NULL UNIQUE, end_time TEXT NOT NULL, day TEXT NOT NULL, description TEXT NOT NULL, content_hash TEXT NOT NULL, created_at TEXT NOT NULL, updated_at TEXT NOT NULL);
+CREATE INDEX IF NOT EXISTS hevy_workouts_day_idx ON hevy_workouts(day);
+CREATE TABLE IF NOT EXISTS hevy_sets (id INTEGER PRIMARY KEY AUTOINCREMENT, workout_id TEXT NOT NULL REFERENCES hevy_workouts(id) ON DELETE CASCADE, position INTEGER NOT NULL, exercise_title TEXT NOT NULL, superset_id TEXT, exercise_notes TEXT NOT NULL, set_index INTEGER NOT NULL, set_type TEXT NOT NULL, weight_kg REAL, reps INTEGER, distance_km REAL, duration_seconds REAL, rpe REAL);
+CREATE INDEX IF NOT EXISTS hevy_sets_workout_idx ON hevy_sets(workout_id,position);
 CREATE TABLE IF NOT EXISTS checkins (day TEXT PRIMARY KEY, text TEXT NOT NULL, input_hash TEXT NOT NULL, created_at TEXT NOT NULL);
 CREATE TABLE IF NOT EXISTS settings (key TEXT PRIMARY KEY, value TEXT NOT NULL);
 CREATE TABLE IF NOT EXISTS target_history (effective_day TEXT PRIMARY KEY, value TEXT NOT NULL, created_at TEXT NOT NULL);
@@ -96,6 +101,98 @@ export const row = (sql: string, ...params: unknown[]) =>
   sqlite.prepare(sql).get(...params) as Record<string, unknown> | undefined;
 export const all = (sql: string, ...params: unknown[]) =>
   sqlite.prepare(sql).all(...params) as Array<Record<string, unknown>>;
+
+function presentWorkout(workout: Record<string, unknown>) {
+  return {
+    ...workout,
+    sets: all('SELECT * FROM hevy_sets WHERE workout_id=? ORDER BY position', workout.id),
+  };
+}
+export const workoutsForDay = (day: string) =>
+  all('SELECT * FROM hevy_workouts WHERE day=? ORDER BY start_time', day).map(presentWorkout);
+export const recentWorkouts = (end: string, limit = 30) =>
+  all('SELECT * FROM hevy_workouts WHERE day<=? ORDER BY start_time DESC LIMIT ?', end, limit).map(
+    presentWorkout,
+  );
+
+export function importHevyWorkouts(workouts: HevyWorkout[]) {
+  const insertWorkout = sqlite.prepare(
+    'INSERT INTO hevy_workouts (id,title,start_time,end_time,day,description,content_hash,created_at,updated_at) VALUES (?,?,?,?,?,?,?,?,?)',
+  );
+  const updateWorkout = sqlite.prepare(
+    'UPDATE hevy_workouts SET title=?,end_time=?,day=?,description=?,content_hash=?,updated_at=? WHERE id=?',
+  );
+  const insertSet = sqlite.prepare(
+    'INSERT INTO hevy_sets (workout_id,position,exercise_title,superset_id,exercise_notes,set_index,set_type,weight_kg,reps,distance_km,duration_seconds,rpe) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)',
+  );
+  const deleteSets = sqlite.prepare('DELETE FROM hevy_sets WHERE workout_id=?');
+  return sqlite.transaction(() => {
+    const result = {
+      workoutsInFile: workouts.length,
+      setsInFile: 0,
+      added: 0,
+      updated: 0,
+      unchanged: 0,
+    };
+    for (const workout of workouts) {
+      result.setsInFile += workout.sets.length;
+      const hash = createHash('sha256').update(JSON.stringify(workout)).digest('hex');
+      const existing = row(
+        'SELECT id,content_hash FROM hevy_workouts WHERE start_time=?',
+        workout.startTime,
+      );
+      if (existing?.content_hash === hash) {
+        result.unchanged++;
+        continue;
+      }
+      const id = existing ? String(existing.id) : randomUUID();
+      const time = now();
+      if (existing) {
+        updateWorkout.run(
+          workout.title,
+          workout.endTime,
+          workout.day,
+          workout.description,
+          hash,
+          time,
+          id,
+        );
+        deleteSets.run(id);
+        result.updated++;
+      } else {
+        insertWorkout.run(
+          id,
+          workout.title,
+          workout.startTime,
+          workout.endTime,
+          workout.day,
+          workout.description,
+          hash,
+          time,
+          time,
+        );
+        result.added++;
+      }
+      workout.sets.forEach((set, position) => {
+        insertSet.run(
+          id,
+          position,
+          set.exerciseTitle,
+          set.supersetId,
+          set.exerciseNotes,
+          set.setIndex,
+          set.setType,
+          set.weightKg,
+          set.reps,
+          set.distanceKm,
+          set.durationSeconds,
+          set.rpe,
+        );
+      });
+    }
+    return result;
+  })();
+}
 
 sqlite.exec(
   'CREATE TABLE IF NOT EXISTS audit_events (id TEXT PRIMARY KEY, actor TEXT NOT NULL, action TEXT NOT NULL, entity_id TEXT NOT NULL, payload TEXT NOT NULL, created_at TEXT NOT NULL)',
@@ -234,9 +331,10 @@ export function dayData(day: string) {
     ]),
   );
   const sleep = sqlite.prepare('SELECT * FROM sleep_records WHERE day = ?').get(day) ?? null;
+  const workouts = workoutsForDay(day);
   const checkin = sqlite.prepare('SELECT * FROM checkins WHERE day = ?').get(day) ?? null;
   const currentHash = createHash('sha256')
-    .update(JSON.stringify({ items, sleep, targets: target }))
+    .update(JSON.stringify({ items, sleep, workouts, targets: target }))
     .digest('hex');
   const checkinStale = !!checkin && (checkin as { input_hash: string }).input_hash !== currentHash;
   return {
@@ -246,6 +344,7 @@ export function dayData(day: string) {
     targets: target,
     percentages,
     sleep,
+    workouts,
     checkin,
     checkinStale,
     currentHash,
@@ -261,6 +360,7 @@ export function overviewData(end: string) {
   return {
     days,
     measurements: all('SELECT * FROM measurements WHERE day <= ? ORDER BY day DESC LIMIT 12', end),
+    workouts: days.flatMap((day) => day.workouts),
   };
 }
 

@@ -78,6 +78,34 @@ export const measurements = sqliteTable('measurements', {
   notes: text('notes'),
   createdAt: text('created_at').notNull(),
 });
+export const hevyWorkouts = sqliteTable('hevy_workouts', {
+  id: text('id').primaryKey(),
+  title: text('title').notNull(),
+  startTime: text('start_time').notNull().unique(),
+  endTime: text('end_time').notNull(),
+  day: text('day').notNull(),
+  description: text('description').notNull(),
+  contentHash: text('content_hash').notNull(),
+  createdAt: text('created_at').notNull(),
+  updatedAt: text('updated_at').notNull(),
+});
+export const hevySets = sqliteTable('hevy_sets', {
+  id: integer('id').primaryKey({ autoIncrement: true }),
+  workoutId: text('workout_id')
+    .notNull()
+    .references(() => hevyWorkouts.id, { onDelete: 'cascade' }),
+  position: integer('position').notNull(),
+  exerciseTitle: text('exercise_title').notNull(),
+  supersetId: text('superset_id'),
+  exerciseNotes: text('exercise_notes').notNull(),
+  setIndex: integer('set_index').notNull(),
+  setType: text('set_type').notNull(),
+  weightKg: real('weight_kg'),
+  reps: integer('reps'),
+  distanceKm: real('distance_km'),
+  durationSeconds: real('duration_seconds'),
+  rpe: real('rpe'),
+});
 export const checkins = sqliteTable('checkins', {
   day: text('day').primaryKey(),
   text: text('text').notNull(),

@@ -812,6 +812,70 @@ button:disabled {
   display: grid;
   gap: 15px;
 }
+.hevy-workout {
+  border-top: 1px solid #354452;
+  padding: 10px 0;
+}
+.hevy-workout summary {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  font-size: 11px;
+  font-weight: 600;
+}
+.hevy-sets {
+  display: grid;
+  gap: 6px;
+  margin-top: 10px;
+  font-size: 10px;
+  color: #9aaabd;
+}
+.hevy-sets > div {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+}
+.hevy-sets > div span:last-child {
+  white-space: nowrap;
+}
+.hevy-import {
+  display: grid;
+  gap: 8px;
+  border-top: 1px solid #354452;
+  padding-top: 12px;
+  margin-top: 8px;
+}
+.hevy-import label {
+  display: grid;
+  gap: 6px;
+  font-size: 11px;
+  color: #bbc8d5;
+}
+.hevy-import input {
+  max-width: 100%;
+  font: inherit;
+  font-size: 11px;
+}
+.hevy-import .text-action {
+  justify-self: start;
+}
+.hevy-import small {
+  color: #9aaabd;
+  font-size: 10px;
+  line-height: 1.4;
+}
+.hevy-import-result,
+.hevy-import-error {
+  margin: 0;
+  font-size: 11px;
+}
+.hevy-import-result {
+  color: #8fd2a6;
+}
+.hevy-import-error {
+  color: #ffb4b4;
+}
 .category-options {
   display: flex;
   flex-wrap: wrap;

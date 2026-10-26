@@ -15,6 +15,7 @@
   "dependencies": {
     "@fastify/cookie": "^11.0.2",
     "better-sqlite3": "^12.4.1",
+    "csv-parse": "^7.0.3",
     "drizzle-orm": "^0.45.4",
     "fastify": "^5.6.1",
     "lucide-react": "^0.468.0",

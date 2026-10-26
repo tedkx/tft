@@ -42,6 +42,27 @@ export type Entry = {
   snapshot_detail?: { unit?: string };
   notes: string | null;
 };
+export type HevySet = {
+  id: number;
+  position: number;
+  exercise_title: string;
+  set_index: number;
+  set_type: string;
+  weight_kg: number | null;
+  reps: number | null;
+  distance_km: number | null;
+  duration_seconds: number | null;
+  rpe: number | null;
+};
+export type HevyWorkout = {
+  id: string;
+  title: string;
+  start_time: string;
+  end_time: string;
+  day: string;
+  description: string;
+  sets: HevySet[];
+};
 export type Day = {
   day: string;
   items: Entry[];
@@ -49,9 +70,14 @@ export type Day = {
   targets: Macros;
   percentages: Macros;
   sleep: { minutes: number; source: string } | null;
+  workouts: HevyWorkout[];
   checkin: { text: string; input_hash: string } | null;
   checkinStale: boolean;
 };
-export type Overview = { days: Day[]; measurements: Array<Record<string, unknown>> };
+export type Overview = {
+  days: Day[];
+  measurements: Array<Record<string, unknown>>;
+  workouts: HevyWorkout[];
+};
 export type TargetPlan = { effectiveDay: string; targets: Macros };
 export type Page = 'today' | 'overview' | 'settings-library' | 'settings-targets';

@@ -24,6 +24,7 @@ import { SleepForm } from './components/SleepForm.js';
 import { MeasurementForm } from './components/MeasurementForm.js';
 import { LibraryEditor } from './components/LibraryEditor.js';
 import { TargetsEditor } from './components/TargetsEditor.js';
+import { HevyImport } from './components/HevyImport.js';
 
 export function App() {
   const [loggedIn, setLoggedIn] = useState<boolean | null>(null),
@@ -200,7 +201,7 @@ export function App() {
             <CircleDashed size={13} />
             <div>
               <strong>Hevy CSV</strong>
-              <small>Εισαγωγή εκκρεμεί</small>
+              <small>Χειροκίνητη εισαγωγή</small>
             </div>
           </div>
         </div>
@@ -439,13 +440,35 @@ export function App() {
                     <h2>Προπόνηση</h2>
                     <span className="subtle">Hevy CSV</span>
                   </div>
-                  <div className="mini-row">
-                    <Dumbbell size={17} />
-                    <div>
-                      <strong>Εισαγωγή προπόνησης</strong>
-                      <small>Θα ενεργοποιηθεί στο επόμενο βήμα.</small>
-                    </div>
-                  </div>
+                  {data.workouts.length ? (
+                    data.workouts.map((workout) => (
+                      <details className="hevy-workout" key={workout.id}>
+                        <summary>
+                          <Dumbbell size={16} />
+                          <span>
+                            {workout.title} · {workout.start_time.slice(11)} · {workout.sets.length}{' '}
+                            σετ
+                          </span>
+                        </summary>
+                        <div className="hevy-sets">
+                          {workout.sets.map((set) => (
+                            <div key={set.id}>
+                              <span>
+                                {set.exercise_title} · {set.set_index + 1}
+                              </span>
+                              <span>
+                                {set.weight_kg == null ? '—' : `${fmt(set.weight_kg, 1)} kg`} ·{' '}
+                                {set.reps == null ? '—' : `${set.reps} επ.`}
+                              </span>
+                            </div>
+                          ))}
+                        </div>
+                      </details>
+                    ))
+                  ) : (
+                    <div className="empty">Δεν υπάρχει προπόνηση Hevy για αυτή την ημέρα.</div>
+                  )}
+                  <HevyImport onImported={load} />
                 </section>
               </div>
             </div>
@@ -507,9 +530,9 @@ export function App() {
                 </strong>
               </section>
               <section className="panel">
-                <span className="subtle">Προπονήσεις</span>
-                <strong>—</strong>
-                <small>Hevy CSV δεν έχει εισαχθεί</small>
+                <span className="subtle">Προπονήσεις · τελευταίες 7 ημέρες</span>
+                <strong>{overview.workouts.length}</strong>
+                <small>Από Hevy CSV</small>
               </section>
             </div>
           </>

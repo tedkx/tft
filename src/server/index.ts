@@ -33,7 +33,10 @@ import {
   updateMeasurement,
   deleteMeasurement,
   upsertCheckin,
+  importHevyWorkouts,
+  recentWorkouts,
 } from './db.js';
+import { parseHevyCsv } from './hevy.js';
 import {
   dateSchema,
   macrosSchema,
@@ -61,6 +64,9 @@ if (invalidNames.length) throw new Error(`Missing or too short: ${invalidNames.j
 if (process.env.NODE_ENV === 'production' && !process.env.FITNESS_PUBLIC_ORIGIN)
   throw new Error('Set FITNESS_PUBLIC_ORIGIN for production');
 await app.register(cookie);
+app.addContentTypeParser('text/csv', { parseAs: 'string' }, (_request, body, done) => {
+  done(null, body);
+});
 
 const sign = (value: string) => createHmac('sha256', secret).update(value).digest('hex');
 const session = () => {
@@ -318,6 +324,17 @@ app.delete('/api/measurements/:id', async (request) => {
   deleteMeasurement(id);
   audit(getActor(request), 'measurement.delete', id, {});
   return { ok: true };
+});
+app.get('/api/hevy/workouts', async (request) => {
+  const end = queryDate((request.query as { end?: string }).end ?? logicalDay());
+  return recentWorkouts(end);
+});
+app.post('/api/hevy/import', { bodyLimit: 5 * 1024 * 1024 }, async (request) => {
+  if (typeof request.body !== 'string') throw new InputError('Upload a Hevy CSV file');
+  const workouts = parseHevyCsv(request.body);
+  const result = importHevyWorkouts(workouts);
+  audit(getActor(request), 'hevy.import', 'csv', result);
+  return result;
 });
 app.get('/api/overview', async (request) => {
   const end = queryDate(
