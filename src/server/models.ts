@@ -53,13 +53,24 @@ export const variantSchema = z.object({
 });
 export const entrySchema = z.object({
   day: dateSchema,
-  kind: z.enum(['meal', 'product', 'custom']),
+  kind: z.enum(['meal', 'product', 'custom', 'freetext']),
   refId: z.string().uuid().optional(),
   variantId: z.string().uuid().optional(),
   amount: z.number().finite().positive().default(1),
-  label: z.string().trim().min(1).max(200).optional(),
+  label: z.string().trim().min(1).max(1000).optional(),
   macros: macrosSchema.optional(),
   notes: z.string().max(3000).nullable().optional(),
+});
+export const estimateSchema = z.object({
+  macros: macrosSchema,
+  assumptions: z.string().trim().min(1).max(3000),
+  expectedRevision: z.number().int().positive(),
+});
+export const promotionSchema = mealSchema.pick({
+  code: true,
+  title: true,
+  categories: true,
+  ingredientsText: true,
 });
 export const measurementSchema = z.object({
   day: dateSchema,

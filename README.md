@@ -18,8 +18,23 @@ The seed command parses the current Markdown tables into `seed/legacy.json`. It 
 
 Set `FITNESS_PUBLIC_ORIGIN` to the final HTTPS origin. Caddy example: `fitness.example.com { reverse_proxy 127.0.0.1:3307 }`. Keep `.env` private and use separate random values for the session secret and agent token. The agent sends `Authorization: Bearer <FITNESS_AGENT_TOKEN>` to the JSON API; the PWA uses an HttpOnly cookie. The `GET /api/agent/context?day=YYYY-MM-DD` and `PUT /api/agent/checkins/YYYY-MM-DD` endpoints support the PC check-in.
 
+## Free-text food entries
+
+In the food form, choose **Περιγραφή γεύματος · εκτίμηση από agent** and describe the food and approximate amounts. The entry is saved immediately as `pending`; its macros do not contribute to the day's totals until estimated. The day and 7-day overview show that totals are incomplete. The existing **Εκτίμηση / extra** choice remains a manual macro entry.
+
+When the PC agent runs (morning check-in or on demand), its workflow is:
+
+1. `GET /api/agent/pending-entries` with the bearer agent token. Each item includes `id`, `day`, description, notes and `revision`.
+2. Estimate protein, carbs, fat and kcal for each item using the supplied quantities and known meal/product data from `GET /api/meals` and `GET /api/products`. Record explicit assumptions; do not treat uncertain quantities as exact.
+3. `PUT /api/agent/entries/:id/estimate` with `{ "macros": { "protein": 45, "carbs": 50, "fat": 15, "kcal": 515 }, "assumptions": "Two medium skewers; small fries", "expectedRevision": 1 }`. A changed entry is rejected; fetch it again before retrying.
+4. Fetch the affected day again before composing or saving its check-in. Editing the food description later makes its estimate pending again; changing only notes preserves the estimate.
+
+The PWA can turn a ready manual or agent-estimated custom entry into a reusable known meal with **Προσθήκη στα γνωστά γεύματα**. The form asks for category, code, title and searchable ingredients; the server creates one manual-macro variant from the logged snapshot. The original diary entry remains unchanged, and repeated promotion is rejected. This also has an authenticated `POST /api/entries/:id/promote` endpoint.
+
+The server does not call an AI service or estimate food on its own. The agent must run on the PC with the existing ChatGPT subscription and agent token; pending entries remain pending until that run.
+
 ## Current scope
 
-This first development slice includes password login, product and meal/variant CRUD, historic daily food entries with immutable macro snapshots, sleep and measurements entry, macro totals/percentages and an agent-authenticated JSON API. Garmin, Withings and Hevy connectors are not live yet and the UI labels them accordingly.
+The app includes password login, product and meal/variant CRUD, historic daily food entries with immutable macro snapshots, sleep and measurements entry, macro totals/percentages, an agent-authenticated JSON API, and Hevy CSV import. Garmin and Withings connectors are not live yet.
 
 Settings now contain the meal/product library and editable daily macro targets. Target changes take effect from the current 07:00-based day in `Europe/Athens` onward; older days retain their previous targets. Existing single-value targets are migrated into the dated target history as the baseline.

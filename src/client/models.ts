@@ -33,13 +33,18 @@ export type Meal = {
 export type Entry = {
   id: string;
   day: string;
-  kind: string;
+  kind: 'meal' | 'product' | 'custom' | 'freetext';
   ref_id: string | null;
   variant_id: string | null;
   label: string;
   amount: number;
   snapshot: Macros;
-  snapshot_detail?: { unit?: string };
+  snapshot_detail?: { unit?: string; assumptions?: string; description?: string };
+  macro_status: 'pending' | 'ready';
+  macro_source: 'manual' | 'agent' | null;
+  promoted_meal_id: string | null;
+  updated_at: string;
+  revision: number;
   notes: string | null;
 };
 export type HevySet = {
@@ -66,6 +71,7 @@ export type HevyWorkout = {
 export type Day = {
   day: string;
   items: Entry[];
+  pendingCount: number;
   total: Macros;
   targets: Macros;
   percentages: Macros;

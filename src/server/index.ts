@@ -24,6 +24,9 @@ import {
   setTargets,
   entryById,
   createEntry,
+  pendingEntries,
+  estimateEntry,
+  promoteEntry,
   updateEntry,
   deleteEntry,
   upsertSleep,
@@ -44,6 +47,8 @@ import {
   mealSchema,
   variantSchema,
   entrySchema,
+  estimateSchema,
+  promotionSchema,
   measurementSchema,
 } from './models.js';
 import { constantEquals, InputError, logicalDay } from './utils.js';
@@ -250,6 +255,13 @@ app.post('/api/entries', async (request) => {
   audit(getActor(request), 'entry.create', String(result.id), input);
   return result;
 });
+app.post('/api/entries/:id/promote', async (request) => {
+  const id = String((request.params as { id: string }).id);
+  const input = promotionSchema.parse(request.body);
+  const result = promoteEntry(id, input);
+  audit(getActor(request), 'entry.promote', id, { mealId: result.id, ...input });
+  return result;
+});
 app.patch('/api/entries/:id', async (request) => {
   const id = String((request.params as { id: string }).id),
     previous = entryById(id);
@@ -266,9 +278,12 @@ app.patch('/api/entries/:id', async (request) => {
     notes: previous.notes,
     ...changes,
   });
-  const recalculate = ['kind', 'refId', 'variantId', 'amount', 'macros', 'label'].some((key) =>
-    Object.hasOwn(changes, key),
-  );
+  const recalculate =
+    input.kind === 'freetext' && previous.kind === 'freetext'
+      ? input.label !== previous.label || input.amount !== previous.amount
+      : ['kind', 'refId', 'variantId', 'amount', 'macros', 'label'].some((key) =>
+          Object.hasOwn(changes, key),
+        );
   const result = updateEntry(id, input, previous, recalculate);
   audit(getActor(request), 'entry.update', id, input);
   return result;
@@ -348,6 +363,18 @@ app.get('/api/agent/context', async (request, reply) => {
     (request.query as { day?: string }).day ?? new Date().toISOString().slice(0, 10),
   );
   return { day: dayData(day), recent: overviewData(day) };
+});
+app.get('/api/agent/pending-entries', async (request, reply) => {
+  if (getActor(request) !== 'agent') return reply.code(403).send({ error: 'Agent token required' });
+  return pendingEntries();
+});
+app.put('/api/agent/entries/:id/estimate', async (request, reply) => {
+  if (getActor(request) !== 'agent') return reply.code(403).send({ error: 'Agent token required' });
+  const id = String((request.params as { id: string }).id);
+  const input = estimateSchema.parse(request.body);
+  const result = estimateEntry(id, input.macros, input.assumptions, input.expectedRevision);
+  audit('agent', 'entry.estimate', id, input);
+  return result;
 });
 app.put('/api/agent/checkins/:day', async (request, reply) => {
   if (getActor(request) !== 'agent') return reply.code(403).send({ error: 'Agent token required' });

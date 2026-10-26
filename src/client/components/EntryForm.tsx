@@ -22,8 +22,8 @@ export function EntryForm({
 }) {
   const activeMeals = meals.filter((meal) => meal.active);
   const activeProducts = products.filter((product) => product.active);
-  const [kind, setKind] = useState<'meal' | 'product' | 'custom'>(
-      (initial?.kind as 'meal' | 'product' | 'custom') ?? 'meal',
+  const [kind, setKind] = useState<'meal' | 'product' | 'custom' | 'freetext'>(
+      initial?.kind ?? 'meal',
     ),
     [mealId, setMealId] = useState(
       initial?.kind === 'meal' ? (initial.ref_id ?? '') : (activeMeals[0]?.id ?? ''),
@@ -44,6 +44,7 @@ export function EntryForm({
   const variants = selectedMeal?.variants.filter((v) => v.active) ?? [];
   const selectedVariant = variants.find((v) => v.id === variantId) ?? variants[0];
   const selectedProduct = activeProducts.find((p) => p.id === productId) ?? activeProducts[0];
+  const freetextChanged = initial?.kind === 'freetext' && label !== initial.label;
   const preview =
     kind === 'meal'
       ? selectedVariant && {
@@ -59,24 +60,30 @@ export function EntryForm({
             fat: (selectedProduct.fat * amount) / selectedProduct.reference_amount,
             kcal: (selectedProduct.kcal * amount) / selectedProduct.reference_amount,
           }
-        : {
-            protein: macros.protein * amount,
-            carbs: macros.carbs * amount,
-            fat: macros.fat * amount,
-            kcal: macros.kcal * amount,
-          };
+        : kind === 'custom'
+          ? {
+              protein: macros.protein * amount,
+              carbs: macros.carbs * amount,
+              fat: macros.fat * amount,
+              kcal: macros.kcal * amount,
+            }
+          : initial?.kind === 'freetext' && initial.macro_status === 'ready' && !freetextChanged
+            ? initial.snapshot
+            : null;
   const submit = (e: React.FormEvent) => {
     e.preventDefault();
     onSave({
       day,
       kind,
-      amount,
+      amount: kind === 'freetext' ? 1 : amount,
       notes,
       ...(kind === 'meal'
         ? { variantId: selectedVariant?.id }
         : kind === 'product'
           ? { refId: selectedProduct?.id }
-          : { label, macros }),
+          : kind === 'custom'
+            ? { label, macros }
+            : { label }),
     });
   };
   return (
@@ -93,6 +100,7 @@ export function EntryForm({
           <option value="meal">Γνωστό γεύμα</option>
           <option value="product">Γνωστό προϊόν</option>
           <option value="custom">Εκτίμηση / extra</option>
+          <option value="freetext">Περιγραφή γεύματος · εκτίμηση από agent</option>
         </select>
       </label>
       {kind === 'meal' && (
@@ -147,17 +155,38 @@ export function EntryForm({
           <MacroFields macros={macros} setMacros={setMacros} />
         </>
       )}
-      <label>
-        {kind === 'product' ? `Ποσότητα (${selectedProduct?.unit ?? 'g'})` : 'Μερίδες'}
-        <input
-          type="number"
-          min="0.01"
-          step="0.01"
-          value={amount}
-          onChange={(e) => setAmount(Number(e.target.value))}
-          required
-        />
-      </label>
+      {kind === 'freetext' && (
+        <>
+          <label>
+            Τι έφαγες και πόσο περίπου;
+            <textarea
+              rows={3}
+              maxLength={1000}
+              value={label}
+              onChange={(e) => setLabel(e.target.value)}
+              placeholder="π.χ. 2 καλαμάκια κοτόπουλο και μια μικρή μερίδα πατάτες"
+              required
+            />
+          </label>
+          <p className="form-help">
+            Αποθηκεύεται τώρα ως εκκρεμές. Ο agent θα συμπληρώσει macros όταν τρέξει από το PC.
+            {freetextChanged && ' Η αλλαγή περιγραφής θα ακυρώσει την παλιά εκτίμηση.'}
+          </p>
+        </>
+      )}
+      {kind !== 'freetext' && (
+        <label>
+          {kind === 'product' ? `Ποσότητα (${selectedProduct?.unit ?? 'g'})` : 'Μερίδες'}
+          <input
+            type="number"
+            min="0.01"
+            step="0.01"
+            value={amount}
+            onChange={(e) => setAmount(Number(e.target.value))}
+            required
+          />
+        </label>
+      )}
       <label>
         Σημείωση (προαιρετικά)
         <input value={notes} onChange={(e) => setNotes(e.target.value)} />

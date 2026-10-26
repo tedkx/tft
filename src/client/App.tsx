@@ -26,6 +26,7 @@ import { MeasurementForm } from './components/MeasurementForm.js';
 import { LibraryEditor } from './components/LibraryEditor.js';
 import { TargetsEditor } from './components/TargetsEditor.js';
 import { HevyImport } from './components/HevyImport.js';
+import { PromoteMealForm } from './components/PromoteMealForm.js';
 
 export function App() {
   const [loggedIn, setLoggedIn] = useState<boolean | null>(null),
@@ -34,7 +35,7 @@ export function App() {
   const [day, setDay] = useState(localDay()),
     [page, setPage] = useState<Page>('today'),
     [settingsOpen, setSettingsOpen] = useState(false),
-    [modal, setModal] = useState<'entry' | 'sleep' | 'measurement' | null>(null),
+    [modal, setModal] = useState<'entry' | 'sleep' | 'measurement' | 'promote' | null>(null),
     [editingEntry, setEditingEntry] = useState<Entry | null>(null);
   const [data, setData] = useState<Day | null>(null),
     [overview, setOverview] = useState<Overview | null>(null),
@@ -327,6 +328,13 @@ export function App() {
                 />
               ))}
             </div>
+            {data.pendingCount > 0 && (
+              <div className="pending-alert" role="status">
+                {data.pendingCount} γεύμα{data.pendingCount === 1 ? '' : 'τα'} περιμέν
+                {data.pendingCount === 1 ? 'ει' : 'ουν'} εκτίμηση. Τα σύνολα της ημέρας δεν είναι
+                ακόμη πλήρη.
+              </div>
+            )}
             <div className="content-grid">
               <div className="column">
                 <section className="panel meals-panel">
@@ -340,11 +348,38 @@ export function App() {
                           <div className="entry-copy">
                             <strong>{item.label}</strong>
                             <small>
-                              {fmt(item.snapshot.protein, 1)} g πρωτεΐνη · {fmt(item.amount, 1)}{' '}
-                              {item.kind === 'product' ? 'g' : 'μερίδα'}
+                              {item.macro_status === 'pending'
+                                ? 'Σε αναμονή εκτίμησης από agent'
+                                : `${fmt(item.snapshot.protein, 1)} g πρωτεΐνη · ${fmt(item.amount, 1)} ${item.kind === 'product' ? 'g' : 'μερίδα'}`}
                             </small>
+                            {item.macro_source === 'agent' && (
+                              <small>
+                                Εκτίμηση agent
+                                {item.snapshot_detail?.assumptions
+                                  ? ` · ${item.snapshot_detail.assumptions}`
+                                  : ''}
+                              </small>
+                            )}
+                            {['custom', 'freetext'].includes(item.kind) &&
+                              item.macro_status === 'ready' &&
+                              !item.promoted_meal_id && (
+                                <button
+                                  className="text-action lower"
+                                  onClick={() => {
+                                    setEditingEntry(item);
+                                    setModal('promote');
+                                  }}
+                                >
+                                  Προσθήκη στα γνωστά γεύματα
+                                </button>
+                              )}
+                            {item.promoted_meal_id && <small>Στα γνωστά γεύματα</small>}
                           </div>
-                          <span>{fmt(item.snapshot.kcal)} kcal</span>
+                          <span>
+                            {item.macro_status === 'pending'
+                              ? '—'
+                              : `${fmt(item.snapshot.kcal)} kcal`}
+                          </span>
                           <button
                             className="icon-button"
                             aria-label={`Επεξεργασία ${item.label}`}
@@ -499,6 +534,11 @@ export function App() {
                     </span>
                     <strong>{d.day.slice(-2)}</strong>
                   </div>
+                  {d.pendingCount > 0 && (
+                    <small className="day-pending" title="Τα macros της ημέρας είναι ελλιπή">
+                      {d.pendingCount} εκκρεμ{d.pendingCount === 1 ? 'εί' : 'ούν'}
+                    </small>
+                  )}
                   {keys.map((key) => (
                     <div
                       className="daily-bar"
@@ -585,7 +625,15 @@ export function App() {
             className="modal"
             role="dialog"
             aria-modal="true"
-            aria-label={modal === 'entry' ? 'Γεύμα' : modal === 'sleep' ? 'Ύπνος' : 'Μέτρηση'}
+            aria-label={
+              modal === 'entry'
+                ? 'Γεύμα'
+                : modal === 'promote'
+                  ? 'Γνωστό γεύμα'
+                  : modal === 'sleep'
+                    ? 'Ύπνος'
+                    : 'Μέτρηση'
+            }
           >
             <div className="modal-head">
               <h2>
@@ -593,9 +641,11 @@ export function App() {
                   ? editingEntry
                     ? 'Επεξεργασία γεύματος'
                     : 'Προσθήκη γεύματος'
-                  : modal === 'sleep'
-                    ? 'Καταχώρηση ύπνου'
-                    : 'Νέα μέτρηση'}
+                  : modal === 'promote'
+                    ? 'Προσθήκη στα γνωστά γεύματα'
+                    : modal === 'sleep'
+                      ? 'Καταχώρηση ύπνου'
+                      : 'Νέα μέτρηση'}
               </h2>
               <button className="icon-button" onClick={() => setModal(null)} aria-label="Κλείσιμο">
                 <X size={19} />
@@ -612,6 +662,21 @@ export function App() {
                   action(() =>
                     api(editingEntry ? `/entries/${editingEntry.id}` : '/entries', {
                       method: editingEntry ? 'PATCH' : 'POST',
+                      body: JSON.stringify(body),
+                    }),
+                  )
+                }
+              />
+            )}
+            {modal === 'promote' && editingEntry && (
+              <PromoteMealForm
+                entry={editingEntry}
+                meals={meals}
+                busy={busy}
+                onSave={(body) =>
+                  void action(() =>
+                    api(`/entries/${editingEntry.id}/promote`, {
+                      method: 'POST',
                       body: JSON.stringify(body),
                     }),
                   )

@@ -7,8 +7,8 @@ import { createHash, randomUUID } from 'node:crypto';
 import * as schema from './schema.js';
 import type {
   EntryInput,
-  Macros,
   MealInput,
+  Macros,
   MeasurementInput,
   ProductInput,
   VariantInput,
@@ -28,7 +28,7 @@ sqlite.exec(`
 CREATE TABLE IF NOT EXISTS products (id TEXT PRIMARY KEY, alias TEXT NOT NULL UNIQUE, name TEXT NOT NULL, reference_amount REAL NOT NULL, unit TEXT NOT NULL, protein REAL NOT NULL, carbs REAL NOT NULL, fat REAL NOT NULL, kcal REAL NOT NULL, salt REAL, source TEXT, notes TEXT, active INTEGER NOT NULL DEFAULT 1, created_at TEXT NOT NULL, updated_at TEXT NOT NULL);
 CREATE TABLE IF NOT EXISTS meals (id TEXT PRIMARY KEY, code TEXT NOT NULL UNIQUE, title TEXT NOT NULL, categories TEXT NOT NULL DEFAULT '[]', ingredients_text TEXT NOT NULL DEFAULT '', description TEXT, active INTEGER NOT NULL DEFAULT 1, created_at TEXT NOT NULL, updated_at TEXT NOT NULL);
 CREATE TABLE IF NOT EXISTS meal_variants (id TEXT PRIMARY KEY, meal_id TEXT NOT NULL REFERENCES meals(id), name TEXT NOT NULL, ingredients TEXT NOT NULL DEFAULT '[]', macro_mode TEXT NOT NULL DEFAULT 'manual', protein REAL NOT NULL, carbs REAL NOT NULL, fat REAL NOT NULL, kcal REAL NOT NULL, is_default INTEGER NOT NULL DEFAULT 0, active INTEGER NOT NULL DEFAULT 1, created_at TEXT NOT NULL, updated_at TEXT NOT NULL);
-CREATE TABLE IF NOT EXISTS food_entries (id TEXT PRIMARY KEY, day TEXT NOT NULL, kind TEXT NOT NULL, ref_id TEXT, variant_id TEXT, amount REAL NOT NULL, label TEXT NOT NULL, snapshot TEXT NOT NULL, snapshot_detail TEXT NOT NULL DEFAULT '{}', notes TEXT, created_at TEXT NOT NULL, updated_at TEXT NOT NULL);
+CREATE TABLE IF NOT EXISTS food_entries (id TEXT PRIMARY KEY, day TEXT NOT NULL, kind TEXT NOT NULL, ref_id TEXT, variant_id TEXT, amount REAL NOT NULL, label TEXT NOT NULL, snapshot TEXT NOT NULL, snapshot_detail TEXT NOT NULL DEFAULT '{}', macro_status TEXT NOT NULL DEFAULT 'ready', macro_source TEXT, promoted_meal_id TEXT, revision INTEGER NOT NULL DEFAULT 1, notes TEXT, created_at TEXT NOT NULL, updated_at TEXT NOT NULL);
 CREATE INDEX IF NOT EXISTS food_entries_day_idx ON food_entries(day);
 CREATE TABLE IF NOT EXISTS sleep_records (day TEXT PRIMARY KEY, minutes INTEGER NOT NULL, source TEXT NOT NULL, updated_at TEXT NOT NULL);
 CREATE TABLE IF NOT EXISTS measurements (id TEXT PRIMARY KEY, day TEXT NOT NULL, weight_kg REAL, waist_cm REAL, fat_kg REAL, muscle_kg REAL, bone_kg REAL, steps INTEGER, source TEXT NOT NULL, notes TEXT, created_at TEXT NOT NULL);
@@ -47,6 +47,17 @@ if (
   )
 )
   sqlite.exec("ALTER TABLE food_entries ADD COLUMN snapshot_detail TEXT NOT NULL DEFAULT '{}'");
+const entryColumns = (sqlite.pragma('table_info(food_entries)') as Array<{ name: string }>).map(
+  (column) => column.name,
+);
+if (!entryColumns.includes('macro_status'))
+  sqlite.exec("ALTER TABLE food_entries ADD COLUMN macro_status TEXT NOT NULL DEFAULT 'ready'");
+if (!entryColumns.includes('macro_source'))
+  sqlite.exec('ALTER TABLE food_entries ADD COLUMN macro_source TEXT');
+if (!entryColumns.includes('promoted_meal_id'))
+  sqlite.exec('ALTER TABLE food_entries ADD COLUMN promoted_meal_id TEXT');
+if (!entryColumns.includes('revision'))
+  sqlite.exec('ALTER TABLE food_entries ADD COLUMN revision INTEGER NOT NULL DEFAULT 1');
 const mealColumns = (sqlite.pragma('table_info(meals)') as Array<{ name: string }>).map(
   (c) => c.name,
 );
@@ -251,6 +262,19 @@ export function recalculateProductVariants(productId: string) {
   }
 }
 export function snapshot(input: EntryInput) {
+  if (input.kind === 'freetext') {
+    if (!input.label) throw new InputError('Free-text entry needs a description');
+    if (input.amount !== 1) throw new InputError('Free-text entry uses one whole serving');
+    return {
+      label: input.label,
+      macros: zeroMacros(),
+      detail: { description: input.label },
+      refId: null,
+      variantId: null,
+      macroStatus: 'pending',
+      macroSource: null,
+    };
+  }
   if (input.kind === 'custom') {
     if (!input.macros || !input.label) throw new InputError('Custom entry needs label and macros');
     return {
@@ -259,6 +283,8 @@ export function snapshot(input: EntryInput) {
       detail: { label: input.label, source: 'custom' },
       refId: null,
       variantId: null,
+      macroStatus: 'ready',
+      macroSource: 'manual',
     };
   }
   if (input.kind === 'product') {
@@ -279,6 +305,8 @@ export function snapshot(input: EntryInput) {
       },
       refId: product.id,
       variantId: null,
+      macroStatus: 'ready',
+      macroSource: null,
     };
   }
   const variant = row('SELECT * FROM meal_variants WHERE id=? AND active=1', input.variantId);
@@ -302,6 +330,8 @@ export function snapshot(input: EntryInput) {
     detail: { mealCode: meal.code, mealTitle: meal.title, variantName: variant.name, ingredients },
     refId: meal.id,
     variantId: variant.id,
+    macroStatus: 'ready',
+    macroSource: null,
   };
 }
 
@@ -322,6 +352,7 @@ export function dayData(day: string) {
     snapshot: JSON.parse(row.snapshot as string),
     snapshot_detail: JSON.parse(row.snapshot_detail as string),
   }));
+  const pendingCount = rows.filter((row) => row.macro_status === 'pending').length;
   const total = items.reduce((sum, item) => addMacros(sum, item.snapshot as Macros), zeroMacros());
   const target = targets(day);
   const percentages = Object.fromEntries(
@@ -340,6 +371,7 @@ export function dayData(day: string) {
   return {
     day,
     items,
+    pendingCount,
     total,
     targets: target,
     percentages,
@@ -528,13 +560,17 @@ export function setTargets(value: Macros) {
   return effectiveDay;
 }
 export const entryById = (id: string) => row('SELECT * FROM food_entries WHERE id=?', id);
+export const pendingEntries = () =>
+  all(
+    "SELECT id,day,label,notes,revision FROM food_entries WHERE macro_status='pending' ORDER BY day,created_at LIMIT 100",
+  );
 export function createEntry(input: EntryInput) {
   const value = snapshot(input);
   const id = randomUUID();
   const time = now();
   sqlite
     .prepare(
-      'INSERT INTO food_entries (id,day,kind,ref_id,variant_id,amount,label,snapshot,snapshot_detail,notes,created_at,updated_at) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)',
+      'INSERT INTO food_entries (id,day,kind,ref_id,variant_id,amount,label,snapshot,snapshot_detail,macro_status,macro_source,notes,created_at,updated_at) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)',
     )
     .run(
       id,
@@ -546,6 +582,8 @@ export function createEntry(input: EntryInput) {
       value.label,
       JSON.stringify(value.macros),
       JSON.stringify(value.detail),
+      value.macroStatus,
+      value.macroSource,
       input.notes ?? null,
       time,
       time,
@@ -566,10 +604,12 @@ export function updateEntry(
         detail: JSON.parse(String(previous.snapshot_detail)),
         refId: previous.ref_id,
         variantId: previous.variant_id,
+        macroStatus: previous.macro_status,
+        macroSource: previous.macro_source,
       };
   sqlite
     .prepare(
-      'UPDATE food_entries SET day=?,kind=?,ref_id=?,variant_id=?,amount=?,label=?,snapshot=?,snapshot_detail=?,notes=?,updated_at=? WHERE id=?',
+      'UPDATE food_entries SET day=?,kind=?,ref_id=?,variant_id=?,amount=?,label=?,snapshot=?,snapshot_detail=?,macro_status=?,macro_source=?,notes=?,updated_at=?,revision=revision+1 WHERE id=?',
     )
     .run(
       input.day,
@@ -580,11 +620,62 @@ export function updateEntry(
       value.label,
       JSON.stringify(value.macros),
       JSON.stringify(value.detail),
+      value.macroStatus,
+      value.macroSource,
       input.notes ?? null,
       now(),
       id,
     );
   return entryById(id);
+}
+export function estimateEntry(
+  id: string,
+  macros: Macros,
+  assumptions: string,
+  expectedRevision: number,
+) {
+  const previous = entryById(id);
+  if (!previous || previous.kind !== 'freetext') throw new InputError('Free-text entry not found');
+  if (previous.macro_status !== 'pending') throw new InputError('Entry is already estimated');
+  if (previous.revision !== expectedRevision)
+    throw new InputError('Entry changed since it was read; fetch it again');
+  sqlite
+    .prepare(
+      "UPDATE food_entries SET snapshot=?,snapshot_detail=?,macro_status='ready',macro_source='agent',updated_at=?,revision=revision+1 WHERE id=?",
+    )
+    .run(
+      JSON.stringify(macros),
+      JSON.stringify({ description: previous.label, assumptions }),
+      now(),
+      id,
+    );
+  return entryById(id);
+}
+export function promoteEntry(
+  id: string,
+  input: Pick<MealInput, 'code' | 'title' | 'categories' | 'ingredientsText'>,
+) {
+  return sqlite.transaction(() => {
+    const entry = entryById(id);
+    if (!entry || !['custom', 'freetext'].includes(String(entry.kind)))
+      throw new InputError('Custom entry not found');
+    if (entry.macro_status !== 'ready') throw new InputError('Estimate this entry first');
+    if (entry.promoted_meal_id) throw new InputError('Entry was already added to the library');
+    const meal = createMeal({ ...input, description: String(entry.label) });
+    createVariant(String(meal.id), {
+      name: 'Βασική εκδοχή',
+      ingredients: [],
+      macroMode: 'manual',
+      macros: JSON.parse(String(entry.snapshot)) as Macros,
+      isDefault: true,
+    });
+    sqlite
+      .prepare(
+        'UPDATE food_entries SET promoted_meal_id=?,updated_at=?,revision=revision+1 WHERE id=?',
+      )
+      .run(meal.id, now(), id);
+    return { ...presentMeal(mealById(String(meal.id))!), id: meal.id };
+  })();
 }
 export function deleteEntry(id: string) {
   sqlite.prepare('DELETE FROM food_entries WHERE id=?').run(id);
