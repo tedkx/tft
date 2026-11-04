@@ -39,7 +39,12 @@ export type Entry = {
   label: string;
   amount: number;
   snapshot: Macros;
-  snapshot_detail?: { unit?: string; assumptions?: string; description?: string };
+  snapshot_detail?: {
+    unit?: string;
+    referenceAmount?: number;
+    assumptions?: string;
+    description?: string;
+  };
   macro_status: 'pending' | 'ready';
   macro_source: 'manual' | 'agent' | null;
   promoted_meal_id: string | null;

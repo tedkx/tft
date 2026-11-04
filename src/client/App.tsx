@@ -350,7 +350,7 @@ export function App() {
                             <small>
                               {item.macro_status === 'pending'
                                 ? 'Σε αναμονή εκτίμησης από agent'
-                                : `${fmt(item.snapshot.protein, 1)} g πρωτεΐνη · ${fmt(item.amount, 1)} ${item.kind === 'product' ? 'g' : 'μερίδα'}`}
+                                : `${fmt(item.snapshot.protein, 1)} g πρωτεΐνη · ${fmt(item.amount, 1)} ${item.kind === 'product' ? (item.snapshot_detail?.unit ?? 'g') : 'μερίδα'}`}
                             </small>
                             {item.macro_source === 'agent' && (
                               <small>

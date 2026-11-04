@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import type { Entry, Macros, Meal, Product } from '../models.js';
-import { initialMacros, keys } from '../constants.js';
+import { initialMacros } from '../constants.js';
 import { fmt } from '../utils.js';
 import { MacroFields } from './MacroFields.js';
 import { MealAutocomplete } from './MealAutocomplete.js';
@@ -30,14 +30,16 @@ export function EntryForm({
     ),
     [variantId, setVariantId] = useState(initial?.variant_id ?? ''),
     [productId, setProductId] = useState(initial?.kind === 'product' ? (initial.ref_id ?? '') : ''),
-    [amount, setAmount] = useState(initial?.amount ?? 1),
+    [quantity, setQuantity] = useState(
+      initial?.kind === 'product'
+        ? initial.amount / (initial.snapshot_detail?.referenceAmount ?? 1)
+        : initial?.kind === 'meal'
+          ? initial.amount
+          : 1,
+    ),
     [label, setLabel] = useState(initial?.label ?? ''),
     [macros, setMacros] = useState<Macros>(
-      initial?.kind === 'custom'
-        ? (Object.fromEntries(
-            keys.map((key) => [key, initial.snapshot[key] / initial.amount]),
-          ) as Macros)
-        : initialMacros,
+      initial?.kind === 'custom' ? initial.snapshot : initialMacros,
     ),
     [notes, setNotes] = useState(initial?.notes ?? '');
   const selectedMeal = activeMeals.find((m) => m.id === mealId);
@@ -48,24 +50,24 @@ export function EntryForm({
   const preview =
     kind === 'meal'
       ? selectedVariant && {
-          protein: selectedVariant.protein * amount,
-          carbs: selectedVariant.carbs * amount,
-          fat: selectedVariant.fat * amount,
-          kcal: selectedVariant.kcal * amount,
+          protein: selectedVariant.protein * quantity,
+          carbs: selectedVariant.carbs * quantity,
+          fat: selectedVariant.fat * quantity,
+          kcal: selectedVariant.kcal * quantity,
         }
       : kind === 'product'
         ? selectedProduct && {
-            protein: (selectedProduct.protein * amount) / selectedProduct.reference_amount,
-            carbs: (selectedProduct.carbs * amount) / selectedProduct.reference_amount,
-            fat: (selectedProduct.fat * amount) / selectedProduct.reference_amount,
-            kcal: (selectedProduct.kcal * amount) / selectedProduct.reference_amount,
+            protein: selectedProduct.protein * quantity,
+            carbs: selectedProduct.carbs * quantity,
+            fat: selectedProduct.fat * quantity,
+            kcal: selectedProduct.kcal * quantity,
           }
         : kind === 'custom'
           ? {
-              protein: macros.protein * amount,
-              carbs: macros.carbs * amount,
-              fat: macros.fat * amount,
-              kcal: macros.kcal * amount,
+              protein: macros.protein,
+              carbs: macros.carbs,
+              fat: macros.fat,
+              kcal: macros.kcal,
             }
           : initial?.kind === 'freetext' && initial.macro_status === 'ready' && !freetextChanged
             ? initial.snapshot
@@ -75,7 +77,12 @@ export function EntryForm({
     onSave({
       day,
       kind,
-      amount: kind === 'freetext' ? 1 : amount,
+      amount:
+        kind === 'product'
+          ? quantity * (selectedProduct?.reference_amount ?? 1)
+          : kind === 'meal'
+            ? quantity
+            : 1,
       notes,
       ...(kind === 'meal'
         ? { variantId: selectedVariant?.id }
@@ -94,7 +101,7 @@ export function EntryForm({
           value={kind}
           onChange={(e) => {
             setKind(e.target.value as typeof kind);
-            setAmount(e.target.value === 'product' ? (selectedProduct?.reference_amount ?? 1) : 1);
+            setQuantity(1);
           }}
         >
           <option value="meal">Γνωστό γεύμα</option>
@@ -135,7 +142,7 @@ export function EntryForm({
             value={selectedProduct?.id ?? ''}
             onChange={(e) => {
               setProductId(e.target.value);
-              setAmount(activeProducts.find((p) => p.id === e.target.value)?.reference_amount ?? 1);
+              setQuantity(1);
             }}
           >
             {activeProducts.map((p) => (
@@ -174,17 +181,22 @@ export function EntryForm({
           </p>
         </>
       )}
-      {kind !== 'freetext' && (
+      {(kind === 'meal' || kind === 'product') && (
         <label>
-          {kind === 'product' ? `Ποσότητα (${selectedProduct?.unit ?? 'g'})` : 'Μερίδες'}
+          Ποσότητα
           <input
             type="number"
             min="0.01"
             step="0.01"
-            value={amount}
-            onChange={(e) => setAmount(Number(e.target.value))}
+            value={quantity}
+            onChange={(e) => setQuantity(Number(e.target.value))}
             required
           />
+          <small className="form-help">
+            {kind === 'product'
+              ? `1 = ${selectedProduct?.reference_amount ?? 1} ${selectedProduct?.unit ?? 'g'} · 0,5 = η μισή ποσότητα`
+              : '1 = ολόκληρη η αποθηκευμένη μερίδα · 0,5 = μισή μερίδα'}
+          </small>
         </label>
       )}
       <label>

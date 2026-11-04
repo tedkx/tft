@@ -55,6 +55,12 @@ test('meal library, snapshots, historical entry and agent API', async () => {
     assert.equal(revised.ingredients_text,'Greek yoghurt');
     const variant=await call(`/api/meals/${meal.id}/variants`,'POST',{name:'With yoghurt',macroMode:'computed',ingredients:[{productId:product.id,amount:150}],isDefault:true});
     assert.equal(variant.protein,15);
+    await call('/api/entries','POST',{day:'2026-10-19',kind:'meal',variantId:variant.id,amount:0.5});
+    await call('/api/entries','POST',{day:'2026-10-19',kind:'product',refId:product.id,amount:50});
+    const halfDay=await call('/api/days/2026-10-19');
+    assert.equal(halfDay.items[0].snapshot.protein,7.5,'0.5 known meal means half its macros');
+    assert.equal(halfDay.items[1].snapshot.protein,5,'50 g of a 100 g product is half its macros');
+    assert.equal(halfDay.total.protein,12.5);
     const entry=await call('/api/entries','POST',{day:'2026-10-20',kind:'meal',variantId:variant.id,amount:1});
     const free=await call('/api/entries','POST',{day:'2026-10-20',kind:'freetext',label:'2 chicken skewers and a small portion of fries',notes:'Dinner'});
     let freeDay=await call('/api/days/2026-10-20');
