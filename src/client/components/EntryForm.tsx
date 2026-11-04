@@ -46,6 +46,8 @@ export function EntryForm({
   const variants = selectedMeal?.variants.filter((v) => v.active) ?? [];
   const selectedVariant = variants.find((v) => v.id === variantId) ?? variants[0];
   const selectedProduct = activeProducts.find((p) => p.id === productId) ?? activeProducts[0];
+  const mealDescription =
+    selectedMeal?.description?.trim() || selectedMeal?.ingredients_text?.trim();
   const freetextChanged = initial?.kind === 'freetext' && label !== initial.label;
   const preview =
     kind === 'meal'
@@ -93,6 +95,24 @@ export function EntryForm({
             : { label }),
     });
   };
+  const quantityField = (
+    <label>
+      Ποσότητα
+      <input
+        type="number"
+        min="0.01"
+        step="0.01"
+        value={quantity}
+        onChange={(e) => setQuantity(Number(e.target.value))}
+        required
+      />
+      <small className="form-help">
+        {kind === 'product'
+          ? `1 = ${selectedProduct?.reference_amount ?? 1} ${selectedProduct?.unit ?? 'g'} · 0,5 = η μισή ποσότητα`
+          : '1 = ολόκληρη μερίδα · 0,5 = μισή μερίδα'}
+      </small>
+    </label>
+  );
   return (
     <form className="form" onSubmit={submit}>
       <label>
@@ -120,38 +140,50 @@ export function EntryForm({
               setVariantId('');
             }}
           />
+          {selectedMeal && (
+            <div className="meal-description">
+              <strong>Περιγραφή γεύματος</strong>
+              <p>{mealDescription || 'Δεν έχει καταχωρηθεί περιγραφή για αυτό το γεύμα.'}</p>
+            </div>
+          )}
+          <div className="meal-controls">
+            <label>
+              Παραλλαγή
+              <select
+                value={selectedVariant?.id ?? ''}
+                onChange={(e) => setVariantId(e.target.value)}
+              >
+                {variants.map((v) => (
+                  <option key={v.id} value={v.id}>
+                    {v.name}
+                  </option>
+                ))}
+              </select>
+            </label>
+            {quantityField}
+          </div>
+        </>
+      )}
+      {kind === 'product' && (
+        <>
           <label>
-            Παραλλαγή
+            Προϊόν
             <select
-              value={selectedVariant?.id ?? ''}
-              onChange={(e) => setVariantId(e.target.value)}
+              value={selectedProduct?.id ?? ''}
+              onChange={(e) => {
+                setProductId(e.target.value);
+                setQuantity(1);
+              }}
             >
-              {variants.map((v) => (
-                <option key={v.id} value={v.id}>
-                  {v.name}
+              {activeProducts.map((p) => (
+                <option key={p.id} value={p.id}>
+                  {p.name} ({p.alias})
                 </option>
               ))}
             </select>
           </label>
+          {quantityField}
         </>
-      )}
-      {kind === 'product' && (
-        <label>
-          Προϊόν
-          <select
-            value={selectedProduct?.id ?? ''}
-            onChange={(e) => {
-              setProductId(e.target.value);
-              setQuantity(1);
-            }}
-          >
-            {activeProducts.map((p) => (
-              <option key={p.id} value={p.id}>
-                {p.name} ({p.alias})
-              </option>
-            ))}
-          </select>
-        </label>
       )}
       {kind === 'custom' && (
         <>
@@ -180,24 +212,6 @@ export function EntryForm({
             {freetextChanged && ' Η αλλαγή περιγραφής θα ακυρώσει την παλιά εκτίμηση.'}
           </p>
         </>
-      )}
-      {(kind === 'meal' || kind === 'product') && (
-        <label>
-          Ποσότητα
-          <input
-            type="number"
-            min="0.01"
-            step="0.01"
-            value={quantity}
-            onChange={(e) => setQuantity(Number(e.target.value))}
-            required
-          />
-          <small className="form-help">
-            {kind === 'product'
-              ? `1 = ${selectedProduct?.reference_amount ?? 1} ${selectedProduct?.unit ?? 'g'} · 0,5 = η μισή ποσότητα`
-              : '1 = ολόκληρη η αποθηκευμένη μερίδα · 0,5 = μισή μερίδα'}
-          </small>
-        </label>
       )}
       <label>
         Σημείωση (προαιρετικά)

@@ -409,6 +409,21 @@
   .meal-autocomplete input {
     @apply text-[11px];
   }
+  .meal-description {
+    @apply rounded-lg border border-line bg-raised p-3 text-[11px] leading-relaxed;
+  }
+  .meal-description strong {
+    @apply block text-ink;
+  }
+  .meal-description p {
+    @apply mt-1 mb-0 whitespace-pre-wrap wrap-break-word text-muted;
+  }
+  .meal-controls {
+    @apply grid min-w-0 grid-cols-[minmax(0,1fr)_minmax(110px,0.55fr)] items-start gap-3;
+  }
+  .meal-controls label {
+    @apply min-w-0;
+  }
   .meal-suggestions {
     @apply absolute inset-x-0 top-[calc(100%+4px)] z-20 max-h-60 overflow-auto rounded-lg border border-[#435366] bg-surface p-1 shadow-xl;
   }
