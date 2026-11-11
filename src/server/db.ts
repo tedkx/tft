@@ -25,10 +25,10 @@ export const sqlite = new Database(dbPath);
 sqlite.pragma('journal_mode = WAL');
 sqlite.pragma('foreign_keys = ON');
 sqlite.exec(`
-CREATE TABLE IF NOT EXISTS products (id TEXT PRIMARY KEY, alias TEXT NOT NULL UNIQUE, name TEXT NOT NULL, reference_amount REAL NOT NULL, unit TEXT NOT NULL, protein REAL NOT NULL, carbs REAL NOT NULL, fat REAL NOT NULL, kcal REAL NOT NULL, salt REAL, source TEXT, notes TEXT, active INTEGER NOT NULL DEFAULT 1, created_at TEXT NOT NULL, updated_at TEXT NOT NULL);
+CREATE TABLE IF NOT EXISTS products (id TEXT PRIMARY KEY, name TEXT NOT NULL, reference_amount REAL NOT NULL, unit TEXT NOT NULL, protein REAL NOT NULL, carbs REAL NOT NULL, fat REAL NOT NULL, kcal REAL NOT NULL, salt REAL, source TEXT, notes TEXT, active INTEGER NOT NULL DEFAULT 1, created_at TEXT NOT NULL, updated_at TEXT NOT NULL);
 CREATE TABLE IF NOT EXISTS meals (id TEXT PRIMARY KEY, code TEXT NOT NULL UNIQUE, title TEXT NOT NULL, categories TEXT NOT NULL DEFAULT '[]', ingredients_text TEXT NOT NULL DEFAULT '', description TEXT, active INTEGER NOT NULL DEFAULT 1, created_at TEXT NOT NULL, updated_at TEXT NOT NULL);
 CREATE TABLE IF NOT EXISTS meal_variants (id TEXT PRIMARY KEY, meal_id TEXT NOT NULL REFERENCES meals(id), name TEXT NOT NULL, ingredients TEXT NOT NULL DEFAULT '[]', macro_mode TEXT NOT NULL DEFAULT 'manual', protein REAL NOT NULL, carbs REAL NOT NULL, fat REAL NOT NULL, kcal REAL NOT NULL, is_default INTEGER NOT NULL DEFAULT 0, active INTEGER NOT NULL DEFAULT 1, created_at TEXT NOT NULL, updated_at TEXT NOT NULL);
-CREATE TABLE IF NOT EXISTS food_entries (id TEXT PRIMARY KEY, day TEXT NOT NULL, kind TEXT NOT NULL, ref_id TEXT, variant_id TEXT, amount REAL NOT NULL, label TEXT NOT NULL, snapshot TEXT NOT NULL, snapshot_detail TEXT NOT NULL DEFAULT '{}', macro_status TEXT NOT NULL DEFAULT 'ready', macro_source TEXT, promoted_meal_id TEXT, revision INTEGER NOT NULL DEFAULT 1, notes TEXT, created_at TEXT NOT NULL, updated_at TEXT NOT NULL);
+CREATE TABLE IF NOT EXISTS food_entries (id TEXT PRIMARY KEY, day TEXT NOT NULL, kind TEXT NOT NULL, ref_id TEXT, variant_id TEXT, amount REAL NOT NULL, label TEXT NOT NULL, snapshot TEXT NOT NULL, snapshot_detail TEXT NOT NULL DEFAULT '{}', macro_status TEXT NOT NULL DEFAULT 'ready', macro_source TEXT, promoted_meal_id TEXT, promoted_product_id TEXT, revision INTEGER NOT NULL DEFAULT 1, notes TEXT, created_at TEXT NOT NULL, updated_at TEXT NOT NULL);
 CREATE INDEX IF NOT EXISTS food_entries_day_idx ON food_entries(day);
 CREATE TABLE IF NOT EXISTS sleep_records (day TEXT PRIMARY KEY, minutes INTEGER NOT NULL, source TEXT NOT NULL, updated_at TEXT NOT NULL);
 CREATE TABLE IF NOT EXISTS measurements (id TEXT PRIMARY KEY, day TEXT NOT NULL, weight_kg REAL, waist_cm REAL, fat_kg REAL, muscle_kg REAL, bone_kg REAL, steps INTEGER, source TEXT NOT NULL, notes TEXT, created_at TEXT NOT NULL);
@@ -56,8 +56,47 @@ if (!entryColumns.includes('macro_source'))
   sqlite.exec('ALTER TABLE food_entries ADD COLUMN macro_source TEXT');
 if (!entryColumns.includes('promoted_meal_id'))
   sqlite.exec('ALTER TABLE food_entries ADD COLUMN promoted_meal_id TEXT');
+if (!entryColumns.includes('promoted_product_id'))
+  sqlite.exec('ALTER TABLE food_entries ADD COLUMN promoted_product_id TEXT');
 if (!entryColumns.includes('revision'))
   sqlite.exec('ALTER TABLE food_entries ADD COLUMN revision INTEGER NOT NULL DEFAULT 1');
+if (
+  (sqlite.pragma('table_info(products)') as Array<{ name: string }>).some(
+    (column) => column.name === 'alias',
+  )
+) {
+  sqlite.transaction(() => {
+    sqlite.exec(`
+      CREATE TABLE products_without_alias (id TEXT PRIMARY KEY, name TEXT NOT NULL, reference_amount REAL NOT NULL, unit TEXT NOT NULL, protein REAL NOT NULL, carbs REAL NOT NULL, fat REAL NOT NULL, kcal REAL NOT NULL, salt REAL, source TEXT, notes TEXT, active INTEGER NOT NULL DEFAULT 1, created_at TEXT NOT NULL, updated_at TEXT NOT NULL);
+      INSERT INTO products_without_alias (id,name,reference_amount,unit,protein,carbs,fat,kcal,salt,source,notes,active,created_at,updated_at)
+      SELECT id,name,reference_amount,unit,protein,carbs,fat,kcal,salt,source,notes,active,created_at,updated_at FROM products;
+      DROP TABLE products;
+      ALTER TABLE products_without_alias RENAME TO products;
+    `);
+    const entries = sqlite.prepare('SELECT id,snapshot_detail FROM food_entries').all() as Array<{
+      id: string;
+      snapshot_detail: string;
+    }>;
+    const update = sqlite.prepare('UPDATE food_entries SET snapshot_detail=? WHERE id=?');
+    for (const entry of entries) {
+      const detail = JSON.parse(entry.snapshot_detail) as Record<string, unknown>;
+      let changed = false;
+      if ('alias' in detail) {
+        delete detail.alias;
+        changed = true;
+      }
+      if (Array.isArray(detail.ingredients)) {
+        for (const ingredient of detail.ingredients as Array<Record<string, unknown>>) {
+          if ('productAlias' in ingredient) {
+            delete ingredient.productAlias;
+            changed = true;
+          }
+        }
+      }
+      if (changed) update.run(JSON.stringify(detail), entry.id);
+    }
+  })();
+}
 const mealColumns = (sqlite.pragma('table_info(meals)') as Array<{ name: string }>).map(
   (c) => c.name,
 );
@@ -297,7 +336,6 @@ export function snapshot(input: EntryInput) {
         input.amount / Number(product.reference_amount),
       ),
       detail: {
-        alias: product.alias,
         name: product.name,
         referenceAmount: product.reference_amount,
         unit: product.unit,
@@ -321,7 +359,6 @@ export function snapshot(input: EntryInput) {
     return {
       ...ingredient,
       productName: product?.name ?? null,
-      productAlias: product?.alias ?? null,
     };
   });
   return {
@@ -396,17 +433,16 @@ export function overviewData(end: string) {
   };
 }
 
-export const listProducts = () => all('SELECT * FROM products ORDER BY active DESC, alias');
+export const listProducts = () => all('SELECT * FROM products ORDER BY active DESC, name');
 export function createProduct(p: ProductInput) {
   const id = randomUUID();
   const time = now();
   sqlite
     .prepare(
-      'INSERT INTO products (id,alias,name,reference_amount,unit,protein,carbs,fat,kcal,salt,source,notes,active,created_at,updated_at) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)',
+      'INSERT INTO products (id,name,reference_amount,unit,protein,carbs,fat,kcal,salt,source,notes,active,created_at,updated_at) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)',
     )
     .run(
       id,
-      p.alias,
       p.name,
       p.referenceAmount,
       p.unit,
@@ -428,10 +464,9 @@ export function updateProduct(id: string, p: ProductInput) {
   sqlite.transaction(() => {
     sqlite
       .prepare(
-        'UPDATE products SET alias=?,name=?,reference_amount=?,unit=?,protein=?,carbs=?,fat=?,kcal=?,salt=?,source=?,notes=?,active=?,updated_at=? WHERE id=?',
+        'UPDATE products SET name=?,reference_amount=?,unit=?,protein=?,carbs=?,fat=?,kcal=?,salt=?,source=?,notes=?,active=?,updated_at=? WHERE id=?',
       )
       .run(
-        p.alias,
         p.name,
         p.referenceAmount,
         p.unit,
@@ -660,7 +695,8 @@ export function promoteEntry(
     if (!entry || !['custom', 'freetext'].includes(String(entry.kind)))
       throw new InputError('Custom entry not found');
     if (entry.macro_status !== 'ready') throw new InputError('Estimate this entry first');
-    if (entry.promoted_meal_id) throw new InputError('Entry was already added to the library');
+    if (entry.promoted_meal_id || entry.promoted_product_id)
+      throw new InputError('Entry was already added to the library');
     const meal = createMeal({ ...input, description: String(entry.label) });
     createVariant(String(meal.id), {
       name: 'Βασική εκδοχή',
@@ -675,6 +711,29 @@ export function promoteEntry(
       )
       .run(meal.id, now(), id);
     return { ...presentMeal(mealById(String(meal.id))!), id: meal.id };
+  })();
+}
+export function promoteEntryToProduct(
+  id: string,
+  input: Pick<ProductInput, 'name' | 'referenceAmount' | 'unit' | 'notes'>,
+) {
+  return sqlite.transaction(() => {
+    const entry = entryById(id);
+    if (!entry || !['custom', 'freetext'].includes(String(entry.kind)))
+      throw new InputError('Custom entry not found');
+    if (entry.macro_status !== 'ready') throw new InputError('Estimate this entry first');
+    if (entry.promoted_meal_id || entry.promoted_product_id)
+      throw new InputError('Entry was already added to the library');
+    const product = createProduct({
+      ...input,
+      ...(JSON.parse(String(entry.snapshot)) as Macros),
+    });
+    sqlite
+      .prepare(
+        'UPDATE food_entries SET promoted_product_id=?,updated_at=?,revision=revision+1 WHERE id=?',
+      )
+      .run(product?.id, now(), id);
+    return product;
   })();
 }
 export function deleteEntry(id: string) {
@@ -755,7 +814,6 @@ type SeedVariant = {
 };
 type LegacySeed = {
   products: Array<{
-    alias: string;
     name: string;
     referenceAmount: number;
     unit: string;
@@ -788,12 +846,11 @@ export function seedIfEmpty() {
   sqlite.transaction(() => {
     if ((sqlite.prepare('SELECT COUNT(*) AS n FROM products').get() as { n: number }).n === 0) {
       const insert = sqlite.prepare(
-        'INSERT INTO products (id,alias,name,reference_amount,unit,protein,carbs,fat,kcal,salt,source,notes,active,created_at,updated_at) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,1,?,?)',
+        'INSERT INTO products (id,name,reference_amount,unit,protein,carbs,fat,kcal,salt,source,notes,active,created_at,updated_at) VALUES (?,?,?,?,?,?,?,?,?,?,?,1,?,?)',
       );
       for (const p of seed.products)
         insert.run(
           randomUUID(),
-          p.alias,
           p.name,
           p.referenceAmount,
           p.unit,
@@ -864,3 +921,52 @@ export function seedIfEmpty() {
   })();
 }
 seedIfEmpty();
+// S7 is the same packaged pudding already present in the product library.
+if (!row("SELECT value FROM settings WHERE key='s7_product_migration'")) {
+  sqlite.transaction(() => {
+    const s7 = row("SELECT id FROM meals WHERE code='S7'");
+    if (s7) {
+      let product = row(
+        "SELECT id FROM products WHERE name='ΟΛΥΜΠΟΣ Protein Pudding Μπισκότο–Λεμόνι'",
+      );
+      if (!product) {
+        product = createProduct({
+          name: 'ΟΛΥΜΠΟΣ Protein Pudding Μπισκότο–Λεμόνι',
+          referenceAmount: 200,
+          unit: 'g',
+          protein: 21,
+          carbs: 13.2,
+          fat: 2.4,
+          kcal: 158,
+          salt: 0.2,
+          source: 'https://www.olympos.gr/product/protein-pudding-biskoto-lemoni/',
+        });
+      }
+      for (const entry of sqlite
+        .prepare(
+          "SELECT id,amount,snapshot_detail FROM food_entries WHERE kind='meal' AND ref_id=?",
+        )
+        .all(s7.id) as Array<{ id: string; amount: number; snapshot_detail: string }>) {
+        const detail = JSON.parse(entry.snapshot_detail) as Record<string, unknown>;
+        sqlite
+          .prepare(
+            "UPDATE food_entries SET kind='product',ref_id=?,variant_id=NULL,amount=?,snapshot_detail=? WHERE id=?",
+          )
+          .run(
+            product!.id,
+            entry.amount * 200,
+            JSON.stringify({
+              ...detail,
+              name: 'ΟΛΥΜΠΟΣ Protein Pudding Μπισκότο–Λεμόνι',
+              referenceAmount: 200,
+              unit: 'g',
+            }),
+            entry.id,
+          );
+      }
+      sqlite.prepare('DELETE FROM meal_variants WHERE meal_id=?').run(s7.id);
+      sqlite.prepare('DELETE FROM meals WHERE id=?').run(s7.id);
+    }
+    sqlite.prepare("INSERT INTO settings (key,value) VALUES ('s7_product_migration','1')").run();
+  })();
+}

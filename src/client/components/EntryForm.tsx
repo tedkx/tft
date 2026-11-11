@@ -177,7 +177,7 @@ export function EntryForm({
             >
               {activeProducts.map((p) => (
                 <option key={p.id} value={p.id}>
-                  {p.name} ({p.alias})
+                  {p.name}
                 </option>
               ))}
             </select>

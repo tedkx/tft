@@ -37,7 +37,6 @@ export function LibraryEditor({
       active: true,
     }),
     [productDraft, setProductDraft] = useState({
-      alias: '',
       name: '',
       referenceAmount: 100,
       unit: 'g',
@@ -104,7 +103,6 @@ export function LibraryEditor({
     setProductDraft(
       p
         ? {
-            alias: p.alias,
             name: p.name,
             referenceAmount: p.reference_amount,
             unit: p.unit,
@@ -118,7 +116,6 @@ export function LibraryEditor({
             active: !!p.active,
           }
         : {
-            alias: '',
             name: '',
             referenceAmount: 100,
             unit: 'g',
@@ -321,7 +318,7 @@ export function LibraryEditor({
                         >
                           {activeProducts.map((p) => (
                             <option key={p.id} value={p.id}>
-                              {p.alias}
+                              {p.name}
                             </option>
                           ))}
                         </select>
@@ -411,7 +408,7 @@ export function LibraryEditor({
               <option value="">＋ Νέο προϊόν</option>
               {products.map((p) => (
                 <option key={p.id} value={p.id}>
-                  {p.alias}
+                  {p.name}
                   {p.active ? '' : ' (ανενεργό)'}
                 </option>
               ))}
@@ -431,24 +428,14 @@ export function LibraryEditor({
               );
             }}
           >
-            <div className="two-fields">
-              <label>
-                Alias
-                <input
-                  value={productDraft.alias}
-                  onChange={(e) => setProductDraft({ ...productDraft, alias: e.target.value })}
-                  required
-                />
-              </label>
-              <label>
-                Όνομα
-                <input
-                  value={productDraft.name}
-                  onChange={(e) => setProductDraft({ ...productDraft, name: e.target.value })}
-                  required
-                />
-              </label>
-            </div>
+            <label>
+              Όνομα
+              <input
+                value={productDraft.name}
+                onChange={(e) => setProductDraft({ ...productDraft, name: e.target.value })}
+                required
+              />
+            </label>
             <div className="two-fields">
               <label>
                 Μερίδα αναφοράς

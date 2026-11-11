@@ -2,7 +2,6 @@ import { integer, real, sqliteTable, text } from 'drizzle-orm/sqlite-core';
 
 export const products = sqliteTable('products', {
   id: text('id').primaryKey(),
-  alias: text('alias').notNull().unique(),
   name: text('name').notNull(),
   referenceAmount: real('reference_amount').notNull(),
   unit: text('unit').notNull(),
@@ -58,6 +57,7 @@ export const entries = sqliteTable('food_entries', {
   macroStatus: text('macro_status').notNull().default('ready'),
   macroSource: text('macro_source'),
   promotedMealId: text('promoted_meal_id'),
+  promotedProductId: text('promoted_product_id'),
   revision: integer('revision').notNull().default(1),
   notes: text('notes'),
   createdAt: text('created_at').notNull(),

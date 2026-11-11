@@ -218,16 +218,6 @@
       "kcal": 280
     },
     {
-      "code": "S7",
-      "title": "Protein pudding Όλυμπος",
-      "category": "snack",
-      "description": "1 συσκευασία 200 g Protein Pudding Όλυμπος Μπισκότο–Λεμόνι",
-      "protein": 21,
-      "carbs": 13.2,
-      "fat": 2.4,
-      "kcal": 158
-    },
-    {
       "code": "D1",
       "title": "Πιάτο με σαρδέλα ή γαύρο",
       "category": "dinner",
@@ -338,7 +328,6 @@
   ],
   "products": [
     {
-      "alias": "cottage arla",
       "name": "Arla Protein Cottage Cheese 1,5%",
       "referenceAmount": 100,
       "unit": "g",
@@ -351,7 +340,6 @@
       "notes": "[Arla](https://www.arlafoods.gr/our-brands/arla-protein-cottage-cheese-200g-95435/)"
     },
     {
-      "alias": "cottage arla 4%",
       "name": "Arla Cottage Cheese 4%",
       "referenceAmount": 100,
       "unit": "g",
@@ -364,7 +352,6 @@
       "notes": "Διαφορετικό από το Arla Protein. [Arla](https://www.arlafoods.gr/our-brands/arla/cottage-cheese-4-200g/)"
     },
     {
-      "alias": "cottage fage",
       "name": "ΦΑΓΕ Flair Cottage Cheese 4%",
       "referenceAmount": 100,
       "unit": "g",
@@ -377,7 +364,6 @@
       "notes": "Προεπιλεγμένο cottage του μενού. Πιστοποιημένο χωρίς γλουτένη. [ΦΑΓΕ](https://gr.fage/yogurts/flair/flair-cottage-cheese)"
     },
     {
-      "alias": "protein pudding olympos lemon",
       "name": "ΟΛΥΜΠΟΣ Protein Pudding Μπισκότο–Λεμόνι",
       "referenceAmount": 200,
       "unit": "g",
@@ -390,7 +376,6 @@
       "notes": "[ΟΛΥΜΠΟΣ](https://www.olympos.gr/product/protein-pudding-biskoto-lemoni/)"
     },
     {
-      "alias": "arla protein pudding caramel",
       "name": "Arla Protein Pudding Αλατισμένη Καραμέλα",
       "referenceAmount": 200,
       "unit": "g",
@@ -403,7 +388,6 @@
       "notes": "[ARLA](https://www.arlafoods.gr/our-brands/arla-protein/pudding-alatismeni-karamela-200g/)"
     },
     {
-      "alias": "tuborg pink grapefruit",
       "name": "Tuborg Pink Grapefruit & Σαγκουίνι",
       "referenceAmount": 1,
       "unit": "serving",
@@ -416,7 +400,6 @@
       "notes": "Αναψυκτικό 0% αλκοόλ. [Ολυμπιακή Ζυθοποιία](https://www.olympicbrewery.gr/our-products/tuborg/tuborg-pink-grapefruit-and-blood-orange/)"
     },
     {
-      "alias": "lays baked tomato basil",
       "name": "Lay’s Στο Φούρνο Ντομάτα & Βασιλικός",
       "referenceAmount": 100,
       "unit": "g",
@@ -429,7 +412,6 @@
       "notes": "Περιέχει σιτάλευρο — όχι κατάλληλο για διατροφή χωρίς γλουτένη. [Lay’s](https://www.lays.gr/products/lays-sto-foyrno-me-geysi-ntomata-kai-basiliko)"
     },
     {
-      "alias": "lurpak unsalted",
       "name": "Lurpak ανάλατο σε σκαφάκι",
       "referenceAmount": 10,
       "unit": "g",
@@ -442,7 +424,6 @@
       "notes": "Η μερίδα εδώ είναι 10 g. [Lurpak](https://www.lurpak.com/gr/proionta/lurpak-analato-skafaki-225gr/)"
     },
     {
-      "alias": "protein bar mgt salted caramel",
       "name": "myGreekTaste Core Protein Raw Salted Caramel Twist",
       "referenceAmount": 60,
       "unit": "g",
@@ -455,7 +436,6 @@
       "notes": "Χωρίς γλουτένη· 3,6 g φυτικές ίνες. [myGreekTaste](https://www.mygreektaste.gr/product/salted-caramel-protein-bar-mgt/)"
     },
     {
-      "alias": "protein bar mgt peanut honey",
       "name": "myGreekTaste Core Protein Raw Peanut Honey Classic",
       "referenceAmount": 60,
       "unit": "g",
@@ -468,7 +448,6 @@
       "notes": "Χωρίς γλουτένη· 2,5 g φυτικές ίνες. [myGreekTaste](https://www.mygreektaste.gr/product/peanut-honey-protein-bar-mygreektaste/)"
     },
     {
-      "alias": "φουντούκια",
       "name": "ΣΚΛΑΒΕΝΙΤΗΣ φουντούκια ψίχα ψημένα, μη αλατισμένα",
       "referenceAmount": 30,
       "unit": "g",
@@ -481,7 +460,6 @@
       "notes": "Προεπιλεγμένο και αποκλειστικό προϊόν για κάθε αναφορά σε φουντούκια. Ανά 100 g: 17,4 g πρωτεΐνη, 6 g υδατ., 65,1 g λίπος, 697 kcal. Ενδέχεται να περιέχει ίχνη γλουτένης. [ΣΚΛΑΒΕΝΙΤΗΣ](https://www.sklavenitis.gr/xiroi-karpoi-snak/xiroi-karpoi-apoxiramena-froyta/foyntoykia-stragalia/sklavenitis-foudoukia-psiha-psimena-mi-alatismena-eisagogis-200gr/)"
     },
     {
-      "alias": "φυστικοβούτυρο olympos",
       "name": "ΟΛΥΜΠΟΣ Άλειμμα Φιστίκι 100% χωρίς γλουτένη",
       "referenceAmount": 20,
       "unit": "g",
@@ -494,7 +472,6 @@
       "notes": "Αποκλειστική βάση φυστικοβούτυρου για το B6. 100% ψημένες αραχίδες, χωρίς ζάχαρη, αλάτι ή πρόσθετο έλαιο. Ανά 100 g: 25 g πρωτεΐνη, 21 g υδατ., 48 g λίπος, 634 kcal. [ΣΚΛΑΒΕΝΙΤΗΣ](https://www.sklavenitis.gr/eidi-proinoy-rofimata/pralines-tachini-fystikovoytyro/fistikovoytyro/olumpos-aleimma-fistiki-horis-glouteni-200gr-1477083/)"
     },
     {
-      "alias": "φυστικοβούτυρο",
       "name": "Calvé Φυστικοβούτυρο Απαλό",
       "referenceAmount": 15,
       "unit": "g",

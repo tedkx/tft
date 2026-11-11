@@ -1,7 +1,6 @@
 export type Macros = { protein: number; carbs: number; fat: number; kcal: number };
 export type Product = Macros & {
   id: string;
-  alias: string;
   name: string;
   reference_amount: number;
   unit: string;
@@ -48,6 +47,7 @@ export type Entry = {
   macro_status: 'pending' | 'ready';
   macro_source: 'manual' | 'agent' | null;
   promoted_meal_id: string | null;
+  promoted_product_id: string | null;
   updated_at: string;
   revision: number;
   notes: string | null;

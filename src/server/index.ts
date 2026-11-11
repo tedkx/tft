@@ -27,6 +27,7 @@ import {
   pendingEntries,
   estimateEntry,
   promoteEntry,
+  promoteEntryToProduct,
   updateEntry,
   deleteEntry,
   upsertSleep,
@@ -49,6 +50,7 @@ import {
   entrySchema,
   estimateSchema,
   promotionSchema,
+  productPromotionSchema,
   measurementSchema,
 } from './models.js';
 import { constantEquals, InputError, logicalDay } from './utils.js';
@@ -120,7 +122,7 @@ app.setErrorHandler((error, _request, reply) => {
     return reply.code(400).send({ error: 'Invalid input', details: error.issues });
   if (error instanceof InputError) return reply.code(400).send({ error: error.message });
   if ((error as { code?: string }).code?.startsWith('SQLITE_CONSTRAINT'))
-    return reply.code(409).send({ error: 'Duplicate code or alias, or item still in use' });
+    return reply.code(409).send({ error: 'Duplicate meal code or item still in use' });
   app.log.error(error);
   return reply.code(500).send({ error: 'Internal server error' });
 });
@@ -260,6 +262,13 @@ app.post('/api/entries/:id/promote', async (request) => {
   const input = promotionSchema.parse(request.body);
   const result = promoteEntry(id, input);
   audit(getActor(request), 'entry.promote', id, { mealId: result.id, ...input });
+  return result;
+});
+app.post('/api/entries/:id/promote-product', async (request) => {
+  const id = String((request.params as { id: string }).id);
+  const input = productPromotionSchema.parse(request.body);
+  const result = promoteEntryToProduct(id, input);
+  audit(getActor(request), 'entry.promote-product', id, { productId: result?.id, ...input });
   return result;
 });
 app.patch('/api/entries/:id', async (request) => {

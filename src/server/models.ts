@@ -11,7 +11,6 @@ export const macrosSchema = z.object({
   kcal: nonNegative,
 });
 export const productSchema = z.object({
-  alias: z.string().trim().min(1).max(100),
   name: z.string().trim().min(1).max(200),
   referenceAmount: z.number().finite().positive(),
   unit: z.enum(['g', 'ml', 'serving']),
@@ -71,6 +70,12 @@ export const promotionSchema = mealSchema.pick({
   title: true,
   categories: true,
   ingredientsText: true,
+});
+export const productPromotionSchema = productSchema.pick({
+  name: true,
+  referenceAmount: true,
+  unit: true,
+  notes: true,
 });
 export const measurementSchema = z.object({
   day: dateSchema,

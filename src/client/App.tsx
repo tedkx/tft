@@ -362,7 +362,8 @@ export function App() {
                             )}
                             {['custom', 'freetext'].includes(item.kind) &&
                               item.macro_status === 'ready' &&
-                              !item.promoted_meal_id && (
+                              !item.promoted_meal_id &&
+                              !item.promoted_product_id && (
                                 <button
                                   className="text-action lower"
                                   onClick={() => {
@@ -370,10 +371,11 @@ export function App() {
                                     setModal('promote');
                                   }}
                                 >
-                                  Προσθήκη στα γνωστά γεύματα
+                                  Προσθήκη στα γνωστά…
                                 </button>
                               )}
                             {item.promoted_meal_id && <small>Στα γνωστά γεύματα</small>}
+                            {item.promoted_product_id && <small>Στα γνωστά προϊόντα</small>}
                           </div>
                           <span>
                             {item.macro_status === 'pending'
@@ -629,7 +631,7 @@ export function App() {
               modal === 'entry'
                 ? 'Γεύμα'
                 : modal === 'promote'
-                  ? 'Γνωστό γεύμα'
+                  ? 'Προσθήκη στα γνωστά'
                   : modal === 'sleep'
                     ? 'Ύπνος'
                     : 'Μέτρηση'
@@ -642,7 +644,7 @@ export function App() {
                     ? 'Επεξεργασία γεύματος'
                     : 'Προσθήκη γεύματος'
                   : modal === 'promote'
-                    ? 'Προσθήκη στα γνωστά γεύματα'
+                    ? 'Προσθήκη στα γνωστά'
                     : modal === 'sleep'
                       ? 'Καταχώρηση ύπνου'
                       : 'Νέα μέτρηση'}
@@ -675,10 +677,13 @@ export function App() {
                 busy={busy}
                 onSave={(body) =>
                   void action(() =>
-                    api(`/entries/${editingEntry.id}/promote`, {
-                      method: 'POST',
-                      body: JSON.stringify(body),
-                    }),
+                    api(
+                      `/entries/${editingEntry.id}/${(body as { destination: string }).destination === 'product' ? 'promote-product' : 'promote'}`,
+                      {
+                        method: 'POST',
+                        body: JSON.stringify(body),
+                      },
+                    ),
                   )
                 }
               />

@@ -23,7 +23,6 @@ const titleOverrides = {
   S4:'Ανθότυρο με αγγούρι και πιπεριά',
   S5:'Κοτόπουλο με φουντούκια',
   S6:'Αυγό, αβοκάντο και cottage',
-  S7:'Protein pudding Όλυμπος',
 };
 
 const meals = [];
@@ -31,6 +30,7 @@ for (const line of nutrition.split(/\r?\n/)) {
   if (!/^\|\s*\*\*[BLSD]\d+\*\*\s*\|/.test(line)) continue;
   const cells = splitRow(line);
   const code = strip(cells[0]);
+  if (code === 'S7') continue; // This packaged pudding belongs to products.
   if (cells.length < 6) continue; // skip the introductory table
   const macroCells = cells.slice(-4);
   const title = titleOverrides[code] ?? (cells[1].startsWith('**') ? cells[1].match(/^\*\*(.*?)\*\*/)?.[1] : undefined) ?? strip(cells[1]).split('.')[0];
@@ -40,17 +40,16 @@ for (const line of nutrition.split(/\r?\n/)) {
 
 const products = [];
 for (const line of foodProducts.split(/\r?\n/)) {
-  if (!line.startsWith('| `')) continue;
+  if (!line.trimStart().startsWith('|')) continue;
   const cells = splitRow(line);
-  if (cells.length < 10) continue;
-  const alias = cells[0].match(/`([^`]+)`/)?.[1];
-  if (!alias) continue;
-  const grams = [...cells[2].matchAll(/(\d+(?:[.,]\d+)?)\s*g/gi)];
+  const productCells = cells.length >= 10 ? cells.slice(1) : cells;
+  if (productCells.length < 9 || !/\d/.test(productCells[1])) continue;
+  const grams = [...productCells[1].matchAll(/(\d+(?:[.,]\d+)?)\s*g/gi)];
   const referenceAmount = grams.length ? Number(grams[grams.length - 1][1].replace(',', '.')) : 1;
-  const source = cells[9].match(/\]\((https?:\/\/[^)]+)\)/)?.[1] ?? null;
-  products.push({ alias, name: strip(cells[1]), referenceAmount, unit: grams.length ? 'g' : 'serving',
-    protein: num(cells[3]), carbs: num(cells[4]), fat: num(cells[5]), kcal: num(cells[6]),
-    salt: num(cells[8]), source, notes: strip(cells[9]) });
+  const source = productCells[8].match(/\]\((https?:\/\/[^)]+)\)/)?.[1] ?? null;
+  products.push({ name: strip(productCells[0]), referenceAmount, unit: grams.length ? 'g' : 'serving',
+    protein: num(productCells[2]), carbs: num(productCells[3]), fat: num(productCells[4]), kcal: num(productCells[5]),
+    salt: num(productCells[7]), source, notes: strip(productCells[8]) });
 }
 
 // Explicit alternatives in the source text become editable variants. Except for
